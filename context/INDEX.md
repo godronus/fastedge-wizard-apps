@@ -46,8 +46,8 @@ Publishes on every push to `main`. Use for development and staging.
 ### jsDelivr (pinned)
 
 ```
-Proxy:    /jsdelivr/G-Core/FastEdge-Wizard-apps/<git-ref>/<wizard>/<asset>
-Resolves: https://cdn.jsdelivr.net/gh/G-Core/FastEdge-Wizard-apps@<git-ref>/<wizard>/<asset>
+Proxy:    /jsdelivr/G-Core/FastEdge-Wizard-apps/<git-ref>/release/<wizard>/<asset>
+Resolves: https://cdn.jsdelivr.net/gh/G-Core/FastEdge-Wizard-apps@<git-ref>/release/<wizard>/<asset>
 ```
 
 Immutable once tagged, CDN-cached. Use for production by pinning to a git tag.
@@ -58,7 +58,7 @@ Set on the FastEdge template that launches this wizard:
 
 ```
 WIZARD_SPEC=1
-WIZARD_SOURCE_CONFIG={"repo":"G-Core/FastEdge-Wizard-apps","path":"<wizard-dir>"}
+WIZARD_SOURCE_CONFIG={"repo":"G-Core/FastEdge-Wizard-apps","path":"release/<wizard-dir>"}
 ```
 
 The portal reads `WIZARD_SOURCE_CONFIG` and passes `?repo=…&path=…` to the proxy.

@@ -3,11 +3,11 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "esbuild src/main.js --bundle --format=esm --outfile=main.js && cp src/index.html index.html",
-    "dev": "npm run build && npx http-server . -p 8086 --cors"
+    "build": "esbuild src/main.js --bundle --format=esm --outfile=dist/main.js && cp src/index.html dist/index.html",
+    "dev": "pnpm run build && npx http-server dist -p 8086 --cors"
   },
   "dependencies": {
-    "@gcore/fastedge-wizard-sdk": "github:godronus/fastedge-wizard-sdk#0.0.1"
+    "@gcore/fastedge-wizard-sdk": "github:godronus/fastedge-wizard-sdk#v0.0.1"
   },
   "devDependencies": {
     "esbuild": "^0.25.0"

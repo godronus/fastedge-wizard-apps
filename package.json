@@ -2,6 +2,7 @@
   "name": "fastedge-wizard-apps",
   "private": true,
   "scripts": {
-    "build": "pnpm -r run build"
+    "build": "pnpm -r run build && node scripts/assemble.mjs",
+    "assemble": "node scripts/assemble.mjs"
   }
 }

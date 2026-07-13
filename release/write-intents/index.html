@@ -1,0 +1,426 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <title>Write-intents smoke test</title>
+        <style>
+            *,
+            *::before,
+            *::after {
+                box-sizing: border-box;
+            }
+            body {
+                font: 14px/1.5 system-ui, sans-serif;
+                margin: 0;
+                padding: 1.5rem;
+                color: #111;
+                max-width: 900px;
+            }
+            h1 {
+                font-size: 1.1rem;
+                margin: 0 0 0.25rem;
+            }
+            .subtitle {
+                color: #666;
+                font-size: 0.85rem;
+                margin: 0 0 1.25rem;
+            }
+            .notice {
+                background: #fff8e1;
+                border: 1px solid #f0b800;
+                border-radius: 6px;
+                padding: 0.75rem 1rem;
+                margin-bottom: 1.5rem;
+                font-size: 0.82rem;
+                line-height: 1.6;
+            }
+            .notice strong {
+                display: block;
+                margin-bottom: 0.25rem;
+            }
+            code {
+                background: #f0f0f0;
+                padding: 0 3px;
+                border-radius: 3px;
+                font-size: 0.9em;
+            }
+            .step {
+                border: 1px solid #ddd;
+                border-radius: 8px;
+                margin-bottom: 1rem;
+                overflow: hidden;
+            }
+            .step-header {
+                display: flex;
+                align-items: center;
+                gap: 0.6rem;
+                padding: 0.65rem 1rem;
+                background: #f8f8f8;
+                border-bottom: 1px solid #eee;
+            }
+            .step-num {
+                font-size: 0.7rem;
+                font-weight: 700;
+                color: #888;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+                min-width: 3.5rem;
+            }
+            .step-title {
+                font-weight: 600;
+                font-size: 0.9rem;
+                flex: 1;
+            }
+            .badge {
+                font-size: 0.72rem;
+                padding: 0.15rem 0.5rem;
+                border-radius: 4px;
+                font-weight: 600;
+            }
+            .badge-auto {
+                background: #e3f2fd;
+                color: #1565c0;
+            }
+            .badge-action {
+                background: #fce4ec;
+                color: #880e4f;
+            }
+            .badge-verify {
+                background: #e8f5e9;
+                color: #1b5e20;
+            }
+            .badge-optional {
+                background: #f3e5f5;
+                color: #4a148c;
+            }
+            .step-icon {
+                font-size: 1rem;
+                min-width: 1.2rem;
+                text-align: center;
+            }
+            .step-body {
+                padding: 0.9rem 1rem;
+            }
+            .hint {
+                font-size: 0.8rem;
+                color: #555;
+                margin: 0 0 0.75rem;
+            }
+            .row {
+                display: flex;
+                gap: 0.75rem;
+                margin-bottom: 0.75rem;
+                align-items: flex-end;
+                flex-wrap: wrap;
+            }
+            label {
+                display: block;
+                font-size: 0.78rem;
+                font-weight: 600;
+                color: #555;
+                margin-bottom: 0.2rem;
+            }
+            input,
+            select,
+            textarea {
+                border: 1px solid #ccc;
+                border-radius: 4px;
+                padding: 0.4rem 0.6rem;
+                font: inherit;
+                font-size: 0.85rem;
+                background: #fff;
+            }
+            input {
+                min-width: 160px;
+            }
+            select {
+                min-width: 220px;
+            }
+            textarea {
+                width: 100%;
+                font-family: monospace;
+                resize: vertical;
+            }
+            button {
+                cursor: pointer;
+                background: #1a73e8;
+                color: #fff;
+                border: none;
+                border-radius: 4px;
+                padding: 0.45rem 1rem;
+                font: inherit;
+                font-size: 0.85rem;
+                font-weight: 600;
+                white-space: nowrap;
+                flex-shrink: 0;
+            }
+            button:disabled {
+                background: #ccc;
+                color: #888;
+                cursor: not-allowed;
+            }
+            pre {
+                background: #f6f6f6;
+                border: 1px solid #e8e8e8;
+                border-radius: 4px;
+                padding: 0.75rem;
+                margin: 0.5rem 0 0;
+                overflow: auto;
+                font-size: 0.81rem;
+                max-height: 280px;
+                font-family: monospace;
+            }
+            .pass {
+                color: #1b5e20;
+            }
+            .fail {
+                color: #b71c1c;
+            }
+            .cancelled {
+                color: #e65100;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Write-intents smoke test</h1>
+        <p class="subtitle">
+            Step-by-step live test of <code>fastedge.apps.*</code>, <code>fastedge.secrets.*</code>, and
+            <code>deployment.*</code> intents.<br />
+            Steps marked <strong>auto</strong> run on connect. Steps marked <strong>action</strong> require your click
+            (and host consent for writes).
+        </p>
+
+        <div class="notice">
+            <strong>Required template params</strong>
+            <code>WIZARD_SPEC=1</code> &nbsp;
+            <code>WIZARD_SOURCE_CONFIG={"repo":"G-Core/FastEdge-Wizard-apps","path":"write-intents"}</code>
+        </div>
+
+        <!-- ── Step 1: Handshake ─────────────────────────────────────────── -->
+        <div class="step">
+            <div class="step-header">
+                <span class="step-num">Step 1</span>
+                <span class="step-title">Handshake</span>
+                <span class="badge badge-auto">auto</span>
+                <span class="step-icon" id="i1">⏳</span>
+            </div>
+            <div class="step-body">
+                <pre id="r1">(connecting…)</pre>
+            </div>
+        </div>
+
+        <!-- ── Step 2: fastedge.secrets.list ────────────────────────────── -->
+        <div class="step">
+            <div class="step-header">
+                <span class="step-num">Step 2</span>
+                <span class="step-title">fastedge.secrets.list()</span>
+                <span class="badge badge-auto">auto</span>
+                <span class="step-icon" id="i2">⏳</span>
+            </div>
+            <div class="step-body">
+                <p class="hint">
+                    Lists wizard-managed secrets. Used to pick an existing secret in Step 5, or
+                    create a new one in Step 3.
+                </p>
+                <pre id="r2">(waiting for handshake)</pre>
+            </div>
+        </div>
+
+        <!-- ── Step 3: fastedge.secrets.create ──────────────────────────── -->
+        <div class="step">
+            <div class="step-header">
+                <span class="step-num">Step 3</span>
+                <span class="step-title">fastedge.secrets.create()</span>
+                <span class="badge badge-optional">optional action</span>
+                <span class="step-icon" id="i3">—</span>
+            </div>
+            <div class="step-body">
+                <p class="hint">
+                    Opens the portal's create-secret modal. The created secret is automatically
+                    added to the secret picker in Step 5.
+                </p>
+                <div class="row">
+                    <div>
+                        <label for="secret-name-hint">Name hint (validated, not forwarded to modal)</label>
+                        <input id="secret-name-hint" type="text" value="smoke-test-secret" />
+                    </div>
+                    <button id="btn-create-secret" disabled>Create secret</button>
+                </div>
+                <pre id="r3">(skipped — optional)</pre>
+            </div>
+        </div>
+
+        <!-- ── Step 4: fastedge.templates.list ──────────────────────────── -->
+        <div class="step">
+            <div class="step-header">
+                <span class="step-num">Step 4</span>
+                <span class="step-title">fastedge.templates.list()</span>
+                <span class="badge badge-auto">auto</span>
+                <span class="step-icon" id="i4">⏳</span>
+            </div>
+            <div class="step-body">
+                <p class="hint">Lists templates. Select one as the <code>fromTemplateId</code> source for app creation in Step 5.</p>
+                <pre id="r4">(waiting for handshake)</pre>
+            </div>
+        </div>
+
+        <!-- ── Step 5: fastedge.apps.create ─────────────────────────────── -->
+        <div class="step">
+            <div class="step-header">
+                <span class="step-num">Step 5</span>
+                <span class="step-title">fastedge.apps.create()</span>
+                <span class="badge badge-action">action · consent required</span>
+                <span class="step-icon" id="i5">—</span>
+            </div>
+            <div class="step-body">
+                <p class="hint">
+                    Creates a wizard-managed app from a template. Shows a host consent dialog — click Allow in the portal.
+                </p>
+                <div class="row">
+                    <div>
+                        <label for="app-name">App name</label>
+                        <input id="app-name" type="text" placeholder="smoke-test-app" />
+                    </div>
+                    <div>
+                        <label for="template-select">Template (fromTemplateId)</label>
+                        <select id="template-select">
+                            <option value="">— loading templates —</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="row">
+                    <div>
+                        <label for="secret-env-key">secretRef env var name (optional)</label>
+                        <input id="secret-env-key" type="text" placeholder="MY_SECRET" style="min-width: 140px" />
+                    </div>
+                    <div>
+                        <label for="secret-id-select">Secret (from list / Step 3)</label>
+                        <select id="secret-id-select">
+                            <option value="">— none —</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="row">
+                    <button id="btn-create-app" disabled>Create app</button>
+                </div>
+                <pre id="r5">(pending)</pre>
+            </div>
+        </div>
+
+        <!-- ── Step 6: fastedge.apps.list ───────────────────────────────── -->
+        <div class="step">
+            <div class="step-header">
+                <span class="step-num">Step 6</span>
+                <span class="step-title">fastedge.apps.list()</span>
+                <span class="badge badge-verify">verify</span>
+                <span class="step-icon" id="i6">—</span>
+            </div>
+            <div class="step-body">
+                <p class="hint">Lists only wizard-managed apps. The app created in Step 5 must appear here.</p>
+                <div class="row">
+                    <button id="btn-apps-list" disabled>List managed apps</button>
+                </div>
+                <pre id="r6">(run Step 5 first)</pre>
+            </div>
+        </div>
+
+        <!-- ── Step 7: fastedge.apps.get ────────────────────────────────── -->
+        <div class="step">
+            <div class="step-header">
+                <span class="step-num">Step 7</span>
+                <span class="step-title">fastedge.apps.get()</span>
+                <span class="badge badge-verify">verify</span>
+                <span class="step-icon" id="i7">—</span>
+            </div>
+            <div class="step-body">
+                <p class="hint">
+                    Fetches full app detail. Secret refs appear as <code>{ name, id }</code> — never plaintext values.
+                </p>
+                <div class="row">
+                    <button id="btn-apps-get" disabled>Get app detail</button>
+                </div>
+                <pre id="r7">(run Step 5 first)</pre>
+            </div>
+        </div>
+
+        <!-- ── Step 8: fastedge.apps.update ─────────────────────────────── -->
+        <div class="step">
+            <div class="step-header">
+                <span class="step-num">Step 8</span>
+                <span class="step-title">fastedge.apps.update()</span>
+                <span class="badge badge-action">action · consent required</span>
+                <span class="step-icon" id="i8">—</span>
+            </div>
+            <div class="step-body">
+                <p class="hint">
+                    Shallow-merges <code>env</code> onto the existing app. Requires host consent.
+                </p>
+                <div class="row">
+                    <div style="flex: 1">
+                        <label for="update-name">New name (optional)</label>
+                        <input id="update-name" type="text" placeholder="(unchanged)" style="width: 100%; min-width: unset" />
+                    </div>
+                </div>
+                <div style="margin-bottom: 0.75rem">
+                    <label for="update-env">Env patch (JSON object — shallow-merged)</label>
+                    <textarea id="update-env" rows="3">{"SMOKE_TEST_KEY": "smoke_test_value"}</textarea>
+                </div>
+                <div class="row">
+                    <button id="btn-apps-update" disabled>Update app</button>
+                </div>
+                <pre id="r8">(run Step 5 first)</pre>
+            </div>
+        </div>
+
+        <!-- ── Step 9: deployment.plan ──────────────────────────────────── -->
+        <div class="step">
+            <div class="step-header">
+                <span class="step-num">Step 9</span>
+                <span class="step-title">deployment.plan()</span>
+                <span class="badge badge-action">action</span>
+                <span class="step-icon" id="i9">—</span>
+            </div>
+            <div class="step-body">
+                <p class="hint">
+                    Validates the plan and stores it host-side. No consent dialog — dry-run only.
+                    The <code>fromTemplateId</code> auto-updates when you pick a template in Step 4.
+                </p>
+                <div style="margin-bottom: 0.75rem">
+                    <label for="plan-apps-json">apps (JSON array)</label>
+                    <textarea id="plan-apps-json" rows="8"></textarea>
+                </div>
+                <div style="margin-bottom: 0.75rem">
+                    <label for="plan-shared-env">sharedEnv (JSON object, optional)</label>
+                    <textarea id="plan-shared-env" rows="2">{"DEPLOYED_BY": "smoke-test"}</textarea>
+                </div>
+                <div class="row">
+                    <button id="btn-plan" disabled>Plan deployment</button>
+                </div>
+                <pre id="r9">(pending — run Steps 1 + 4 first)</pre>
+            </div>
+        </div>
+
+        <!-- ── Step 10: deployment.apply ────────────────────────────────── -->
+        <div class="step">
+            <div class="step-header">
+                <span class="step-num">Step 10</span>
+                <span class="step-title">deployment.apply()</span>
+                <span class="badge badge-action">action · consent required</span>
+                <span class="step-icon" id="i10">—</span>
+            </div>
+            <div class="step-body">
+                <p class="hint">
+                    Applies the stored plan. Shows a host consent dialog; progress events stream in as each step
+                    completes. On failure the host attempts a best-effort rollback.
+                </p>
+                <div class="row">
+                    <button id="btn-apply" disabled>Apply plan</button>
+                </div>
+                <div id="progress-log" style="font-size: 0.8rem; color: #555; margin: 0.5rem 0; min-height: 1.2rem"></div>
+                <pre id="r10">(run Step 9 first)</pre>
+            </div>
+        </div>
+
+        <script type="module" src="./main.js"></script>
+    </body>
+</html>

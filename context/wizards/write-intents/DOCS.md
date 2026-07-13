@@ -16,19 +16,26 @@ write-intents/
   src/
     index.html    ← HTML + CSS, loads ./main.js as a module
     main.js       ← all bridge logic; one import from @gcore/fastedge-wizard-sdk
-  index.html      ← committed build output (served by proxy)
-  main.js         ← committed build output (bundled SDK + logic)
+  dist/           ← gitignored intermediate build output
   package.json
   .gitignore
+release/
+  write-intents/
+    index.html    ← assembled output (committed; served via gh-pages / jsDelivr)
+    main.js
 ```
 
 ## Build & Dev
 
 ```bash
-cd write-intents
-pnpm install
-pnpm run build        # esbuild + cp → index.html + main.js at wizard root
-pnpm run dev          # build then serve on http://localhost:8086
+# Full build (from repo root) — builds all wizards then assembles into public/
+pnpm run build
+
+# Build this wizard only (intermediate dist/ — run assemble separately)
+cd write-intents && pnpm run build
+
+# Local dev — builds to dist/ and serves on http://localhost:8086
+cd write-intents && pnpm run dev
 ```
 
 For the portal dev override in `wizard-host.dev.ts`:
@@ -42,7 +49,7 @@ To launch this wizard from the portal, the FastEdge template needs:
 
 ```
 WIZARD_SPEC=1
-WIZARD_SOURCE_CONFIG={"repo":"G-Core/FastEdge-Wizard-apps","path":"write-intents"}
+WIZARD_SOURCE_CONFIG={"repo":"G-Core/FastEdge-Wizard-apps","path":"release/write-intents"}
 ```
 
 No other env vars required on the wizard app itself — it creates resources
@@ -74,7 +81,7 @@ See `context/INDEX.md` SDK version log. To bump:
 # in write-intents/
 pnpm add github:G-Core/fastedge-wizard-sdk#<new-tag>
 pnpm run build
-git add package.json pnpm-lock.yaml index.html main.js
+git add package.json pnpm-lock.yaml release/write-intents/
 git commit -m "chore(write-intents): bump SDK to <new-tag>"
 ```
 
