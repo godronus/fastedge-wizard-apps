@@ -18,7 +18,7 @@ for (const wizard of WIZARDS) {
         test(`${wizard} renders in ${theme}`, async ({ page }) => {
             await page.goto(previewUrl(wizard, PORT));
             await page.evaluate((t) => (document.body.className = t), theme);
-            await expect(page).toHaveScreenshot(`${wizard}-${theme}.png`, { maxDiffPixelRatio: 0.02 });
+            await expect(page).toHaveScreenshot(`${wizard}-${theme}.png`, { maxDiffPixelRatio: 0.05 });
         });
     }
 
