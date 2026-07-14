@@ -1,0 +1,10 @@
+{
+    "extends": "stylelint-config-standard",
+    "rules": {
+        "color-no-hex": true,
+        "function-disallowed-list": ["rgb", "rgba", "hsl", "hsla"],
+        "declaration-property-value-disallowed-list": {
+            "/color|background|border|fill|stroke/": ["/^(?!var\\(--gc-)/"]
+        }
+    }
+}

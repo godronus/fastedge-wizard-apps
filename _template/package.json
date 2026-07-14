@@ -1,0 +1,15 @@
+{
+    "name": "_template",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "build": "esbuild src/main.js --bundle --format=esm --outfile=dist/main.js && cp src/index.html dist/index.html && cp src/styles.css dist/styles.css",
+        "dev": "pnpm run build && npx http-server dist -p 8087 --cors"
+    },
+    "dependencies": {
+        "@gcore/fastedge-wizard-sdk": "github:G-Core/fastedge-wizard-sdk#v1.0.0"
+    },
+    "devDependencies": {
+        "esbuild": "^0.25.0"
+    }
+}
