@@ -1,15 +1,15 @@
 {
-  "name": "write-intents",
-  "private": true,
-  "type": "module",
-  "scripts": {
-    "build": "esbuild src/main.js --bundle --format=esm --outfile=dist/main.js && cp src/index.html dist/index.html",
-    "dev": "pnpm run build && npx http-server dist -p 8086 --cors"
-  },
-  "dependencies": {
-    "@gcore/fastedge-wizard-sdk": "github:godronus/fastedge-wizard-sdk#v0.0.3"
-  },
-  "devDependencies": {
-    "esbuild": "^0.25.0"
-  }
+    "name": "write-intents",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "build": "esbuild src/main.js --bundle --format=esm --outfile=dist/main.js && cp src/index.html dist/index.html && cp src/styles.css dist/styles.css",
+        "dev": "pnpm run build && npx http-server dist -p 8086 --cors"
+    },
+    "dependencies": {
+        "@gcore/fastedge-wizard-sdk": "github:godronus/fastedge-wizard-sdk#v0.0.4"
+    },
+    "devDependencies": {
+        "esbuild": "^0.25.0"
+    }
 }
