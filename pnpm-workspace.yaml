@@ -3,5 +3,5 @@ packages:
   - write-intents
 
 onlyBuiltDependencies:
-  - '@gcore/fastedge-wizard-sdk'
+  - '@gcore/fastedge-wizard-sdk@0.1.0'
   - esbuild
