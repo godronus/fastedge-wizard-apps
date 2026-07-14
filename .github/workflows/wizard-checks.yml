@@ -12,21 +12,33 @@ jobs:
     name: Stylelint — no raw colours
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/setup-node
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm lint:css
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: ./.github/setup-node
+
+      - name: Lint CSS
+        run: pnpm lint:css
 
   visual-and-a11y:
     name: Screenshot diff + axe
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/setup-node
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm run build
-      - run: npx playwright install --with-deps chromium
-      - run: pnpm test:e2e
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: ./.github/setup-node
+
+      - name: Build wizards
+        run: pnpm run build
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Run visual + a11y tests
+        run: pnpm test:e2e
 
       - name: Upload report on failure
         if: failure()
