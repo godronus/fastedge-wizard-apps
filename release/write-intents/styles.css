@@ -1,0 +1,214 @@
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+body {
+    font: 14px/1.5 var(--gc-font-family, system-ui, sans-serif);
+    margin: 0;
+    padding: 1.5rem;
+    color: var(--gc-font-color);
+    background: var(--gc-background-primary-color);
+    max-width: 900px;
+}
+
+h1 {
+    font-size: 1.1rem;
+    margin: 0 0 0.25rem;
+}
+
+.subtitle {
+    color: var(--gc-font-text-secondary-color);
+    font-size: 0.85rem;
+    margin: 0 0 1.25rem;
+}
+
+.notice {
+    background: var(--gc-background-yellow-color);
+    border: 1px solid var(--gc-alert-stroke-yellow-color);
+    border-radius: 6px;
+    padding: 0.75rem 1rem;
+    margin-bottom: 1.5rem;
+    font-size: 0.82rem;
+    line-height: 1.6;
+}
+
+.notice strong {
+    display: block;
+    margin-bottom: 0.25rem;
+}
+
+code {
+    background: var(--gc-background-tertiary-color);
+    padding: 0 3px;
+    border-radius: 3px;
+    font-size: 0.9em;
+}
+
+.step {
+    border: 1px solid var(--gc-border-primary-color);
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    overflow: hidden;
+}
+
+.step-header {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.65rem 1rem;
+    background: var(--gc-background-secondary-color);
+    border-bottom: 1px solid var(--gc-border-secondary-color);
+}
+
+.step-num {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--gc-font-text-grey-color);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    min-width: 3.5rem;
+}
+
+.step-title {
+    font-weight: 600;
+    font-size: 0.9rem;
+    flex: 1;
+}
+
+.badge {
+    font-size: 0.72rem;
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    font-weight: 600;
+}
+
+.badge-auto {
+    background: var(--gc-background-blue-color);
+    color: var(--gc-alert-stroke-blue-color);
+}
+
+.badge-action {
+    background: var(--gc-background-red-color);
+    color: var(--gc-alert-stroke-red-color);
+}
+
+.badge-verify {
+    background: var(--gc-background-green-color);
+    color: var(--gc-alert-stroke-green-color);
+}
+
+.badge-optional {
+    background: var(--gc-background-tertiary-color);
+    color: var(--gc-font-text-secondary-color);
+}
+
+.step-icon {
+    font-size: 1rem;
+    min-width: 1.2rem;
+    text-align: center;
+}
+
+.step-body {
+    padding: 0.9rem 1rem;
+}
+
+.hint {
+    font-size: 0.8rem;
+    color: var(--gc-font-text-grey-color);
+    margin: 0 0 0.75rem;
+}
+
+.row {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+    align-items: flex-end;
+    flex-wrap: wrap;
+}
+
+label {
+    display: block;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--gc-font-text-grey-color);
+    margin-bottom: 0.2rem;
+}
+
+input,
+select,
+textarea {
+    border: 1px solid var(--gc-border-primary-color);
+    border-radius: 4px;
+    padding: 0.4rem 0.6rem;
+    font: inherit;
+    font-size: 0.85rem;
+    background: var(--gc-background-controls-color);
+    color: var(--gc-font-color);
+}
+
+input {
+    min-width: 160px;
+}
+
+select {
+    min-width: 220px;
+}
+
+textarea {
+    width: 100%;
+    font-family: monospace;
+    resize: vertical;
+}
+
+button {
+    cursor: pointer;
+    background: var(--gc-button-primary-bg);
+    color: var(--gc-button-primary-text-color);
+    border: none;
+    border-radius: 4px;
+    padding: 0.45rem 1rem;
+    font: inherit;
+    font-size: 0.85rem;
+    font-weight: 600;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+button:disabled {
+    background: var(--gc-button-disabled-bg);
+    color: var(--gc-disabled-text-color);
+    cursor: not-allowed;
+}
+
+pre {
+    background: var(--gc-background-secondary-color);
+    border: 1px solid var(--gc-border-secondary-color);
+    border-radius: 4px;
+    padding: 0.75rem;
+    margin: 0.5rem 0 0;
+    overflow: auto;
+    font-size: 0.81rem;
+    max-height: 280px;
+    font-family: monospace;
+}
+
+.pass {
+    color: var(--gc-alert-stroke-green-color);
+}
+
+.fail {
+    color: var(--gc-alert-stroke-red-color);
+}
+
+.cancelled {
+    color: var(--gc-alert-stroke-yellow-color);
+}
+
+#progress-log {
+    font-size: 0.8rem;
+    color: var(--gc-font-text-grey-color);
+    margin: 0.5rem 0;
+    min-height: 1.2rem;
+}

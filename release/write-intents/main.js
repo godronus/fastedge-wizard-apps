@@ -1,10 +1,10 @@
-// ../node_modules/.pnpm/@gcore+fastedge-wizard-sdk@https+++codeload.github.com+godronus+fastedge-wizard-sdk+tar_93b3dde18a9813037a30d627b3197f00/node_modules/@gcore/fastedge-wizard-sdk/dist/protocol.js
+// ../node_modules/.pnpm/@gcore+fastedge-wizard-sdk@https+++codeload.github.com+godronus+fastedge-wizard-sdk+tar_8032cca40de8230815e913f84de8bca9/node_modules/@gcore/fastedge-wizard-sdk/dist/protocol.js
 var WIZARD_PROTOCOL_VERSION = 1;
 var MAX_MESSAGE_BYTES = 64 * 1024;
 var HANDSHAKE_TIMEOUT_MS = 1e4;
 var INTENT_TIMEOUT_MS = 6e4;
 
-// ../node_modules/.pnpm/@gcore+fastedge-wizard-sdk@https+++codeload.github.com+godronus+fastedge-wizard-sdk+tar_93b3dde18a9813037a30d627b3197f00/node_modules/@gcore/fastedge-wizard-sdk/dist/errors.js
+// ../node_modules/.pnpm/@gcore+fastedge-wizard-sdk@https+++codeload.github.com+godronus+fastedge-wizard-sdk+tar_8032cca40de8230815e913f84de8bca9/node_modules/@gcore/fastedge-wizard-sdk/dist/errors.js
 var WizardError = class extends Error {
   constructor(code, message) {
     super(message);
@@ -13,8 +13,14 @@ var WizardError = class extends Error {
   }
 };
 
-// ../node_modules/.pnpm/@gcore+fastedge-wizard-sdk@https+++codeload.github.com+godronus+fastedge-wizard-sdk+tar_93b3dde18a9813037a30d627b3197f00/node_modules/@gcore/fastedge-wizard-sdk/dist/sdk.js
+// ../node_modules/.pnpm/@gcore+fastedge-wizard-sdk@https+++codeload.github.com+godronus+fastedge-wizard-sdk+tar_8032cca40de8230815e913f84de8bca9/node_modules/@gcore/fastedge-wizard-sdk/dist/sdk.js
 var SDK_VERSION = "0.1.0";
+function applyTheme(theme) {
+  if (typeof document === "undefined")
+    return;
+  document.body.classList.remove("gc-theme-light", "gc-theme-dark");
+  document.body.classList.add(`gc-theme-${theme}`);
+}
 var CLIENT_INTENT_TIMEOUT_MS = INTENT_TIMEOUT_MS + 3e4;
 function isRecord(value) {
   return typeof value === "object" && value !== null;
@@ -50,6 +56,10 @@ var WizardSessionImpl = class {
       apply: (params) => this.invoke("deployment.apply", params)
     };
     this.port.onmessage = (event) => this.handlePortMessage(event);
+    this.on("theme.changed", (p) => {
+      const payload = p;
+      applyTheme(payload.theme);
+    });
   }
   handlePortMessage(event) {
     const data = event.data;
@@ -165,6 +175,11 @@ function connect(options) {
       if (data["v"] !== WIZARD_PROTOCOL_VERSION) {
         finish(() => reject(new WizardError("protocol_error", `Protocol version mismatch: host=${String(data["v"])}, sdk=${WIZARD_PROTOCOL_VERSION}`)));
         return;
+      }
+      const hello = data;
+      applyTheme(hello.hostContext.theme ?? "light");
+      if (typeof document !== "undefined") {
+        document.documentElement.lang = hello.hostContext.locale ?? "en";
       }
       const ready = { v: WIZARD_PROTOCOL_VERSION, type: "ready", sdkVersion: SDK_VERSION };
       port.postMessage(ready);

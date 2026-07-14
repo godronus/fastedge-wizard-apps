@@ -1,8 +1,9 @@
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 
-// Wizards to test — extend as new ones are added.
-const WIZARDS = ['write-intents', '_template'];
+// Real deployed wizards to test — add rows here when new wizards are added.
+// _template is a starter skeleton, not a deployed wizard.
+const WIZARDS = ['write-intents'];
 const THEMES = ['gc-theme-light', 'gc-theme-dark'] as const;
 
 // release/<wizard>/index.html is served by playwright's webServer (see playwright.config.ts).
