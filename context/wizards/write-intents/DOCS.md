@@ -19,11 +19,10 @@ write-intents/
   dist/           ← gitignored intermediate build output
   package.json
   .gitignore
-release/
-  write-intents/
-    index.html    ← assembled output (committed; served via gh-pages / jsDelivr)
-    main.js
 ```
+
+Build output (`dist/` → `release/write-intents/`) is **not committed** — CI
+builds it and publishes to the `gh-pages` branch, which jsDelivr serves.
 
 ## Build & Dev
 
@@ -49,7 +48,7 @@ To launch this wizard from the portal, the FastEdge template needs:
 
 ```
 WIZARD_SPEC=1
-WIZARD_SOURCE_CONFIG={"repo":"G-Core/FastEdge-Wizard-apps","path":"release/write-intents"}
+WIZARD_SOURCE_CONFIG={"repo":"G-Core/FastEdge-Wizard-apps","path":"gh-pages/write-intents","cdn":"jsdelivr"}
 ```
 
 No other env vars required on the wizard app itself — it creates resources
@@ -80,9 +79,9 @@ See `context/INDEX.md` SDK version log. To bump:
 ```bash
 # in write-intents/
 pnpm add github:G-Core/fastedge-wizard-sdk#<new-tag>
-pnpm run build
-git add package.json pnpm-lock.yaml release/write-intents/
+git add package.json pnpm-lock.yaml
 git commit -m "chore(write-intents): bump SDK to <new-tag>"
+# CI rebuilds and republishes on merge — no build output to commit
 ```
 
 ## Change Log

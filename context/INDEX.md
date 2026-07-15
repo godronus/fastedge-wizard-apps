@@ -31,37 +31,46 @@ for architecture, protocol, trust model, and intent catalog).
 
 ## Proxy URL Contract
 
-The proxy (`WIZARD_ALLOWED_REPOS = ["G-Core/FastEdge-Wizard-apps", ...]`) resolves
-wizard assets via two CDN backends. Paths with no file extension resolve to `/index.html`.
+The proxy (`WIZARD_ALLOWED_REPOS = ["G-Core/FastEdge-Wizard-apps", ...]`) supports
+two CDN backends. Paths with no file extension resolve to `/index.html`.
 
-### GitHub Pages
+### jsDelivr — the backend we use
 
-```
-Proxy:    /pages/G-Core/FastEdge-Wizard-apps/<wizard>/<asset>
-Resolves: https://G-Core.github.io/FastEdge-Wizard-apps/<wizard>/<asset>
-```
-
-Publishes on every push to `main`. Use for development and staging.
-
-### jsDelivr (pinned)
+CI publishes built output to the `gh-pages` branch (`.github/workflows/deploy.yml`);
+jsDelivr serves it from git. The ref is a **stable branch** (`gh-pages`), not a
+per-release tag — so `WIZARD_SOURCE_CONFIG` is set once and never rewritten per
+deploy. Note there is **no `release/` prefix**: `peaceiris` publishes the
+`release/` dir *as the branch root*, so a wizard sits at `gh-pages/<wizard>`.
 
 ```
-Proxy:    /jsdelivr/G-Core/FastEdge-Wizard-apps/<git-ref>/release/<wizard>/<asset>
-Resolves: https://cdn.jsdelivr.net/gh/G-Core/FastEdge-Wizard-apps@<git-ref>/release/<wizard>/<asset>
+Proxy path: /jsdelivr/G-Core/FastEdge-Wizard-apps/<ref>/<wizard>/<asset>
+                                                    ^ref  ^wizard-subpath
+Resolves:   https://cdn.jsdelivr.net/gh/G-Core/FastEdge-Wizard-apps@<ref>/<wizard>/<asset>
 ```
 
-Immutable once tagged, CDN-cached. Use for production by pinning to a git tag.
+**Freshness:** jsDelivr caches branch refs for up to 7 days, and nothing else
+caches (the WASM proxy runs every request; no edge cache). So each publish
+**purges** the changed assets from jsDelivr — that purge is the only thing making
+a deploy visible promptly.
+
+### GitHub Pages — not used here
+
+The proxy also has a `/pages/` backend (`<org>.github.io/<repo>/...`), but the
+GitHub Pages *feature* is disabled org-wide, so it does not resolve for this
+repo. jsDelivr reads the git branch directly and needs no Pages feature.
 
 ### Wiring a wizard to the portal
 
-Set on the FastEdge template that launches this wizard:
+Set on the FastEdge template that launches this wizard (first path segment is the
+git ref, the rest is the wizard subdir):
 
 ```
 WIZARD_SPEC=1
-WIZARD_SOURCE_CONFIG={"repo":"G-Core/FastEdge-Wizard-apps","path":"release/<wizard-dir>"}
+WIZARD_SOURCE_CONFIG={"repo":"G-Core/FastEdge-Wizard-apps","path":"gh-pages/<wizard-dir>","cdn":"jsdelivr"}
 ```
 
-The portal reads `WIZARD_SOURCE_CONFIG` and passes `?repo=…&path=…` to the proxy.
+The portal reads `WIZARD_SOURCE_CONFIG` and builds the proxy path from `repo` +
+`path` + `cdn`.
 
 ---
 
@@ -111,9 +120,9 @@ session.dispose()
 ## Orange's Repo
 
 Orange (`Orange/gcore-wizards`) has their own allow-list entry on the proxy.
-Their repo follows the same structure as this one: each wizard is a subdirectory
-with `src/`, committed build output, and the same `@gcore/fastedge-wizard-sdk`
-dep. They manage their own SDK version pins and builds independently.
+Each wizard is a subdirectory with `src/` and the same `@gcore/fastedge-wizard-sdk`
+dep. They manage their own SDK version pins, builds, and publish/serve strategy
+independently — their `WIZARD_SOURCE_CONFIG` ref/cdn need not match ours.
 
 ---
 

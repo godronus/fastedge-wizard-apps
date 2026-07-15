@@ -5,9 +5,13 @@
 
 ## What This Repo Is
 
-A monorepo serving wizard front-ends via GitHub Pages / jsDelivr. The FastEdge
-portal proxies these files through a hardened WASM app that re-serves them under
-a fixed origin with enforced CSP (`connect-src 'none'`, `frame-ancestors <portal>`).
+A monorepo of wizard front-ends. `main` holds **source only**; CI builds every
+wizard and publishes the output to the `gh-pages` branch, which **jsDelivr**
+serves from git (`cdn.jsdelivr.net/gh/<repo>@gh-pages/<wizard>/...`). The
+FastEdge portal proxies those files through a hardened WASM app that re-serves
+them under a fixed origin with enforced CSP (`connect-src 'none'`,
+`frame-ancestors <portal>`). The GitHub Pages *feature* is disabled org-wide —
+`gh-pages` is just a build-artifact branch, not a Pages site.
 
 ## Repo Layout
 
@@ -23,11 +27,11 @@ packages/
   <name>/                      ← shared packages (empty until first React wizard)
     CLAUDE.md                  ← only if the package is complex enough to warrant it
 <wizard>/
-  src/                         ← source files (not served)
-  index.html                   ← committed build output (served by proxy)
-  main.js                      ← committed build output
+  src/                         ← source files (the ONLY thing committed on main)
   package.json
   .gitignore
+release/                       ← build output — gitignored; CI builds it and
+                                 publishes to the gh-pages branch. Never committed.
 ```
 
 ## Working Here
@@ -45,7 +49,7 @@ packages/
 
 1. Create `<name>/` with `src/`, `package.json`, `.gitignore`
 2. Follow `write-intents/` as the pattern
-3. `pnpm install && pnpm run build` — produces committed `index.html` + `main.js`
+3. Commit **`src/` only** — CI builds and publishes on merge to `main`
 4. Add `context/wizards/<name>/DOCS.md`
 5. Register it in `context/INDEX.md` wizard registry
 6. Add `'<name>'` to `pnpm-workspace.yaml`
@@ -55,10 +59,11 @@ packages/
 ```bash
 cd <wizard>
 pnpm install
-pnpm run build      # esbuild bundles src/main.js → main.js; copies src/index.html
+pnpm run build      # esbuild bundles src/main.js → dist/; copies index.html + styles.css
 ```
 
-Commit `index.html` and `main.js` — the proxy serves them from GitHub Pages.
+Building locally is for testing only. **Do not commit build output** — CI is
+the sole builder (see `.github/workflows/deploy.yml`).
 
 ### Run all wizard builds
 
@@ -68,11 +73,12 @@ pnpm run build      # from repo root — runs build in every workspace package
 
 ## Rules
 
-- Committed build outputs (`index.html`, `main.js`) are not optional — the proxy
-  serves them directly from GitHub Pages. Always rebuild and commit after source changes.
+- **Never commit build output.** `main` is source-only; CI builds on merge and
+  publishes to `gh-pages`, which jsDelivr serves. Committed `dist/`/`release/`
+  files are gitignored and rot against source — don't reintroduce them.
 - Wizards are independent. No cross-wizard imports. No shared runtime code.
 - `packages/*` is for shared build-time dependencies only (React components, utils).
   These are bundled away at build time — never fetched at runtime.
 - Never commit `node_modules/`.
-- Pin the SDK to a tag in any wizard whose output is committed for production use.
-  `#main` is for local development only.
+- Pin the SDK to a tag in any wizard that ships to production. `#main` is for
+  local development only.
