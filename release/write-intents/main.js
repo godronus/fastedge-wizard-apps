@@ -1,10 +1,10 @@
-// ../node_modules/.pnpm/@gcore+fastedge-wizard-sdk@https+++codeload.github.com+godronus+fastedge-wizard-sdk+tar_8032cca40de8230815e913f84de8bca9/node_modules/@gcore/fastedge-wizard-sdk/dist/protocol.js
+// ../node_modules/.pnpm/@gcore+fastedge-wizard-sdk@https+++codeload.github.com+godronus+fastedge-wizard-sdk+tar_bdd9f2425d7a0beaa781e2ce202b89fa/node_modules/@gcore/fastedge-wizard-sdk/dist/protocol.js
 var WIZARD_PROTOCOL_VERSION = 1;
 var MAX_MESSAGE_BYTES = 64 * 1024;
 var HANDSHAKE_TIMEOUT_MS = 1e4;
 var INTENT_TIMEOUT_MS = 6e4;
 
-// ../node_modules/.pnpm/@gcore+fastedge-wizard-sdk@https+++codeload.github.com+godronus+fastedge-wizard-sdk+tar_8032cca40de8230815e913f84de8bca9/node_modules/@gcore/fastedge-wizard-sdk/dist/errors.js
+// ../node_modules/.pnpm/@gcore+fastedge-wizard-sdk@https+++codeload.github.com+godronus+fastedge-wizard-sdk+tar_bdd9f2425d7a0beaa781e2ce202b89fa/node_modules/@gcore/fastedge-wizard-sdk/dist/errors.js
 var WizardError = class extends Error {
   constructor(code, message) {
     super(message);
@@ -13,7 +13,7 @@ var WizardError = class extends Error {
   }
 };
 
-// ../node_modules/.pnpm/@gcore+fastedge-wizard-sdk@https+++codeload.github.com+godronus+fastedge-wizard-sdk+tar_8032cca40de8230815e913f84de8bca9/node_modules/@gcore/fastedge-wizard-sdk/dist/sdk.js
+// ../node_modules/.pnpm/@gcore+fastedge-wizard-sdk@https+++codeload.github.com+godronus+fastedge-wizard-sdk+tar_bdd9f2425d7a0beaa781e2ce202b89fa/node_modules/@gcore/fastedge-wizard-sdk/dist/sdk.js
 var SDK_VERSION = "0.1.0";
 function applyTheme(theme) {
   if (typeof document === "undefined")
@@ -63,6 +63,7 @@ var WizardSessionImpl = class {
   }
   handlePortMessage(event) {
     const data = event.data;
+    console.log("Farq: -> WizardSessionImpl -> handlePortMessage -> data:", data);
     if (!isRecord(data) || data["v"] !== WIZARD_PROTOCOL_VERSION)
       return;
     if (data["type"] === "result") {

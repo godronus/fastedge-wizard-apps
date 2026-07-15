@@ -24,8 +24,8 @@ importers:
   write-intents:
     dependencies:
       '@gcore/fastedge-wizard-sdk':
-        specifier: github:godronus/fastedge-wizard-sdk#v0.0.4
-        version: https://codeload.github.com/godronus/fastedge-wizard-sdk/tar.gz/d4f89cbf90049116f2b838c380b1327c6a42dfca
+        specifier: github:godronus/fastedge-wizard-sdk#v0.0.5
+        version: https://codeload.github.com/godronus/fastedge-wizard-sdk/tar.gz/b1b3a72d3851d3115c03a7a93b3e4c002d2cdf6d
     devDependencies:
       esbuild:
         specifier: ^0.25.0
@@ -252,9 +252,9 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@gcore/fastedge-wizard-sdk@https://codeload.github.com/godronus/fastedge-wizard-sdk/tar.gz/d4f89cbf90049116f2b838c380b1327c6a42dfca':
-    resolution: {tarball: https://codeload.github.com/godronus/fastedge-wizard-sdk/tar.gz/d4f89cbf90049116f2b838c380b1327c6a42dfca}
-    version: 0.0.4
+  '@gcore/fastedge-wizard-sdk@https://codeload.github.com/godronus/fastedge-wizard-sdk/tar.gz/b1b3a72d3851d3115c03a7a93b3e4c002d2cdf6d':
+    resolution: {tarball: https://codeload.github.com/godronus/fastedge-wizard-sdk/tar.gz/b1b3a72d3851d3115c03a7a93b3e4c002d2cdf6d}
+    version: 0.0.5
     engines: {node: '>=22'}
 
   '@keyv/bigmap@1.3.1':
@@ -832,7 +832,7 @@ snapshots:
   '@esbuild/win32-x64@0.25.12':
     optional: true
 
-  '@gcore/fastedge-wizard-sdk@https://codeload.github.com/godronus/fastedge-wizard-sdk/tar.gz/d4f89cbf90049116f2b838c380b1327c6a42dfca': {}
+  '@gcore/fastedge-wizard-sdk@https://codeload.github.com/godronus/fastedge-wizard-sdk/tar.gz/b1b3a72d3851d3115c03a7a93b3e4c002d2cdf6d': {}
 
   '@keyv/bigmap@1.3.1(keyv@5.6.0)':
     dependencies:
