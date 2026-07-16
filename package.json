@@ -2,9 +2,9 @@
   "name": "fastedge-wizard-apps",
   "private": true,
   "scripts": {
-    "build": "pnpm -r run build && node scripts/assemble.mjs",
+    "build": "node scripts/build-all.mjs && node scripts/assemble.mjs",
     "assemble": "node scripts/assemble.mjs",
-    "lint:css": "stylelint \"*/src/**/*.css\"",
+    "lint:css": "stylelint \"wizards/*/src/**/*.css\"",
     "test:e2e": "playwright test"
   },
   "devDependencies": {

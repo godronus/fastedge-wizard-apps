@@ -130,6 +130,6 @@ independently — their `WIZARD_SOURCE_CONFIG` ref/cdn need not match ours.
 
 | Wizard | Directory | Status | Docs |
 |--------|-----------|--------|------|
-| Write-intents smoke test | `write-intents/` | Active | [`context/wizards/write-intents/DOCS.md`](wizards/write-intents/DOCS.md) |
+| Write-intents smoke test | `wizards/write-intents/` | Active | [`context/wizards/write-intents/DOCS.md`](wizards/write-intents/DOCS.md) |
 
 _Add rows here when new wizards are added._

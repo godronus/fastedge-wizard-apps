@@ -12,7 +12,7 @@ Plain HTML + vanilla JavaScript. No framework. One build step (esbuild bundles
 the SDK into `main.js`).
 
 ```
-write-intents/
+wizards/write-intents/
   src/
     index.html    ← HTML + CSS, loads ./main.js as a module
     main.js       ← all bridge logic; one import from @gcore/fastedge-wizard-sdk
@@ -27,14 +27,14 @@ builds it and publishes to the `gh-pages` branch, which jsDelivr serves.
 ## Build & Dev
 
 ```bash
-# Full build (from repo root) — builds all wizards then assembles into public/
+# Full build (from repo root) — builds all wizards then assembles into release/
 pnpm run build
 
 # Build this wizard only (intermediate dist/ — run assemble separately)
-cd write-intents && pnpm run build
+cd wizards/write-intents && pnpm run build
 
-# Local dev — builds to dist/ and serves on http://localhost:8086
-cd write-intents && pnpm run dev
+# Local dev — builds to dist/ and serves on http://localhost:9999
+cd wizards/write-intents && pnpm run dev:local
 ```
 
 For the portal dev override in `wizard-host.dev.ts`:
@@ -77,7 +77,7 @@ Note: `deployment.*` intents are un-namespaced (top-level) by design — see
 See `context/INDEX.md` SDK version log. To bump:
 
 ```bash
-# in write-intents/
+# in wizards/write-intents/
 pnpm add github:G-Core/fastedge-wizard-sdk#<new-tag>
 git add package.json pnpm-lock.yaml
 git commit -m "chore(write-intents): bump SDK to <new-tag>"

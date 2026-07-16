@@ -1,5 +1,4 @@
-packages:
-  - packages/*
+packages: []
 
 onlyBuiltDependencies:
   - '@gcore/fastedge-wizard-sdk'

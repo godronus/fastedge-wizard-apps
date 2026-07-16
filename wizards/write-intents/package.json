@@ -8,11 +8,11 @@
         "dev:local": "run-s build dev:local:start",
         "dev:local:start": "run-p build:watch serve:local",
         "build:watch": "esbuild src/main.js --bundle --format=esm --watch=forever --outfile=dist/main.js",
-        "serve:local": "node ../../fastedge-wizard-sdk/bin/dev.mjs dist",
+        "serve:local": "node ../../../fastedge-wizard-sdk/bin/dev.mjs dist",
         "dev:watch": "esbuild src/main.js --bundle --watch --outfile=dist/main.js"
     },
     "dependencies": {
-        "@gcore/fastedge-wizard-sdk": "github:godronus/fastedge-wizard-sdk#v0.0.7"
+        "@gcore/fastedge-wizard-sdk": "github:godronus/fastedge-wizard-sdk#v0.0.8"
     },
     "devDependencies": {
         "esbuild": "^0.25.0"

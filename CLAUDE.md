@@ -26,10 +26,12 @@ context/
 packages/
   <name>/                      ← shared packages (empty until first React wizard)
     CLAUDE.md                  ← only if the package is complex enough to warrant it
-<wizard>/
-  src/                         ← source files (the ONLY thing committed on main)
-  package.json
-  .gitignore
+wizards/
+  <name>/
+    src/                       ← source files (the ONLY thing committed on main)
+    package.json
+    .gitignore
+  _template/                   ← starter skeleton — not deployed to gh-pages
 release/                       ← build output — gitignored; CI builds it and
                                  publishes to the gh-pages branch. Never committed.
 ```
@@ -47,17 +49,16 @@ release/                       ← build output — gitignored; CI builds it and
 
 ### Adding a new wizard
 
-1. Create `<name>/` with `src/`, `package.json`, `.gitignore`
-2. Follow `write-intents/` as the pattern
-3. Commit **`src/` only** — CI builds and publishes on merge to `main`
+1. Create `wizards/<name>/` with `src/`, `package.json`, `.gitignore`
+2. Follow `wizards/write-intents/` as the pattern (any package manager is fine)
+3. Commit **`src/` and the lockfile** — CI builds and publishes on merge to `main`
 4. Add `context/wizards/<name>/DOCS.md`
 5. Register it in `context/INDEX.md` wizard registry
-6. Add `'<name>'` to `pnpm-workspace.yaml`
 
 ### Build a wizard
 
 ```bash
-cd <wizard>
+cd wizards/<name>
 pnpm install
 pnpm run build      # esbuild bundles src/main.js → dist/; copies index.html + styles.css
 ```

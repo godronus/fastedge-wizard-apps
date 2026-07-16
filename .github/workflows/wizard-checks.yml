@@ -3,8 +3,8 @@ name: Wizard checks
 on:
   pull_request:
     paths:
-      - '*/src/**'
-      - '*/package.json'
+      - 'wizards/*/src/**'
+      - 'wizards/*/package.json'
       - '.stylelintrc.json'
 
 jobs:
