@@ -4,6 +4,10 @@
     box-sizing: border-box;
 }
 
+[hidden] {
+    display: none !important;
+}
+
 body {
     font: 14px/1.5 var(--gc-font-family, system-ui, sans-serif);
 
