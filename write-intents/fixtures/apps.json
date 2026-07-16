@@ -1,0 +1,12 @@
+[
+    {
+        "id": 101,
+        "name": "my-first-app",
+        "api_type": "wasi-http",
+        "status": 1,
+        "url": "https://my-first-app-101.fastedge.example",
+        "template": 1,
+        "env": { "BASE": "https://example.com" },
+        "secrets": []
+    }
+]

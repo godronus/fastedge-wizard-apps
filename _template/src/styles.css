@@ -1,5 +1,8 @@
 /* Use only var(--gc-*) tokens — raw colour literals fail the CI stylelint gate. */
 
+/* TODO classless-first CSS (00-decisions.md #5): .gc-stack is a utility-class
+   wrapper that contradicts the classless decision. When the shared base layer
+   ships, delete this rule and style bare body/elements instead. */
 .gc-stack {
     display: flex;
     flex-direction: column;

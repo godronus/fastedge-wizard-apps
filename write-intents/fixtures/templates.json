@@ -1,0 +1,40 @@
+[
+    {
+        "id": 1,
+        "name": "Markdown Renderer",
+        "short_descr": "Converts a Markdown document to HTML, optionally applying CSS",
+        "long_descr": "Call the application at /. It fetches the Markdown document from the path and converts it to HTML. Specify styles via HEAD; set it to an empty string to supply your own CSS in the request body.",
+        "api_type": "wasi-http",
+        "binary_id": 42,
+        "params": [
+            {
+                "name": "BASE",
+                "data_type": "string",
+                "descr": "Base origin URL; the request path is appended to form the Markdown source URL",
+                "mandatory": true
+            },
+            {
+                "name": "HEAD",
+                "data_type": "string",
+                "descr": "Content injected into <head> of the generated HTML document",
+                "mandatory": false
+            }
+        ]
+    },
+    {
+        "id": 2,
+        "name": "JWT Validation",
+        "short_descr": "Validates a JWT passed in the Authorization header as \"Bearer <token>\"",
+        "long_descr": "Validates the JWT signature and expiry before forwarding the request upstream. Returns 401 on failure.",
+        "api_type": "proxy-wasm",
+        "binary_id": 43,
+        "params": [
+            {
+                "name": "JWKS_URI",
+                "data_type": "string",
+                "descr": "JWKS endpoint used to verify the token signature",
+                "mandatory": true
+            }
+        ]
+    }
+]
