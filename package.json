@@ -9,6 +9,7 @@
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.12.1",
+    "@gcore/fastedge-wizard-sdk": "github:godronus/fastedge-wizard-sdk#v0.0.9",
     "@playwright/test": "^1.61.1",
     "npm-run-all2": "9.0.2",
     "stylelint": "^17.14.0",

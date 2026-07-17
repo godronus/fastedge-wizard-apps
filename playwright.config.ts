@@ -5,7 +5,7 @@ export default defineConfig({
     snapshotDir: './e2e/snapshots',
     reporter: [['list'], ['html', { open: 'never' }]],
     webServer: {
-        command: 'npx http-server release -p 9000 --cors --silent',
+        command: 'PORT=9000 node node_modules/@gcore/fastedge-wizard-sdk/bin/dev.mjs release',
         port: 9000,
         reuseExistingServer: !process.env['CI'],
     },
