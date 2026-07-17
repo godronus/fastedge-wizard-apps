@@ -1,74 +1,12 @@
-/* Use only var(--gc-*) tokens — raw colour literals fail the CI stylelint gate. */
-
-*,
-*::before,
-*::after {
-    box-sizing: border-box;
-}
-
-[hidden] {
-    display: none !important;
-}
-
-body {
-    font: 14px/1.5 var(--gc-font-family, system-ui, sans-serif);
-
-    /* padding/max-width/margin move to shared base when classless-first CSS lands */
-    padding: 1.5rem;
-    max-width: 900px;
-    margin: 0 auto;
-    color: var(--gc-font-color);
-    background: var(--gc-background-primary-color);
-}
+/* Wizard-specific styles.
+ * Base reset, typography, and element styles come from /styles/v1/wizard.css —
+ * injected automatically; don't repeat them here.
+ * Use only var(--gc-*) tokens; raw colour literals fail the CI stylelint gate.
+ */
 
 main {
     display: flex;
     flex-direction: column;
     gap: 1rem;
     max-width: 480px;
-}
-
-h1 {
-    font-size: 1.1rem;
-    margin: 0;
-}
-
-label {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-    font-size: 0.78rem;
-    font-weight: 600;
-    color: var(--gc-font-text-grey-color);
-}
-
-input,
-select,
-textarea {
-    border: 1px solid var(--gc-border-primary-color);
-    border-radius: 4px;
-    padding: 0.4rem 0.6rem;
-    font: inherit;
-    font-size: 0.85rem;
-    background: var(--gc-background-controls-color);
-    color: var(--gc-font-color);
-}
-
-button {
-    cursor: pointer;
-    background: var(--gc-button-primary-bg);
-    color: var(--gc-button-primary-text-color);
-    border: none;
-    border-radius: 4px;
-    padding: 0.45rem 1rem;
-    font: inherit;
-    font-size: 0.85rem;
-    font-weight: 600;
-    align-self: flex-start;
-}
-
-button:disabled {
-    background: var(--gc-button-disabled-bg);
-    color: var(--gc-disabled-text-color);
-    cursor: not-allowed;
 }

@@ -91,6 +91,7 @@ GitHub source. Types are included. No npm publish needed.
 
 | Tag / ref | Notes |
 |-----------|-------|
+| `v0.0.8` | Current pin for `write-intents` (hosted at `godronus/fastedge-wizard-sdk` during dev; will move to `G-Core/` org) |
 | `main` | Development — do not pin committed wizards to this |
 
 _Add rows when tags are published._
@@ -114,6 +115,27 @@ session.deployment.apply({ planId })        // consent required
 session.on('deployment.progress', handler)
 session.dispose()
 ```
+
+### Mock host
+
+The SDK ships a development server (`bin/dev.mjs`) that acts as a mock portal
+host — it serves the wizard inside a real iframe, runs the full bridge protocol,
+and responds to intents using data from the wizard's `fixtures/` directory. Each
+wizard that has a `fixtures/` dir gets realistic intent responses without hitting
+the real API. Run via `pnpm run dev:local` inside a wizard directory.
+
+The mock host validates `fixtures/*.json` against the SDK's Zod schemas at
+startup and warns on any mismatch. Pass `--validate-only` for a CI-safe check.
+
+---
+
+## Developer Skills
+
+Claude Code skills (`.claude/agents/`) automate the recurring workflows:
+
+| Skill | What it does |
+|-------|-------------|
+| `/sync-wizard-fixtures` | Fetches live Gcore templates/apps/secrets, presents selection menus, fudges IDs, writes `fixtures/` and validates against SDK schemas |
 
 ---
 

@@ -79,11 +79,18 @@ color: var(--gc-font-color);
 background: var(--gc-background-primary-color);
 ```
 
-The token reference is in `context/INDEX.md`. The `wizard-tokens.css` linked in `index.html` provides them at runtime.
+The token reference is in `context/INDEX.md`. Tokens are provided at runtime via
+`/styles/v1/wizard.css` — injected automatically, no `<link>` required in your HTML.
 
 ### HTML — classless first
 
-Style bare semantic elements. Avoid utility classes on every element:
+The portal injects `/styles/v1/wizard.css` into every wizard HTML response (both
+in production via the WASM proxy and locally via the dev server). It styles bare
+semantic elements — `<button>`, `<input>`, `<h1>`, `<label>`, etc. — so plain HTML
+looks like the portal with zero classes. **You do not need any explicit `<link>` tag
+for base styles in your `index.html`.**
+
+Write semantic HTML; add classes only for genuine variants:
 
 ```html
 <!-- ✗ avoid -->
@@ -93,7 +100,20 @@ Style bare semantic elements. Avoid utility classes on every element:
 <button>Submit</button>
 ```
 
-See `_template/src/styles.css` for the pattern.
+Your `styles.css` should contain only wizard-specific layout and variant classes —
+not resets, body styles, or element base styles that are already in the shared base.
+
+### Frameworks
+
+You may use a rendering framework (React, Vue, Svelte, etc.) as long as you style
+with semantic HTML and plain CSS files using `var(--gc-*)` tokens.
+
+**Bring-your-own UI libraries (MUI, Ant Design, shadcn, Tailwind, etc.) are not
+allowed.** They ship their own styles that override the shared base and bypass the
+token enforcement gates.
+
+Framework-based wizards are reviewed against the same screenshot baseline — if it
+looks foreign, the diff fails.
 
 ### Security
 
