@@ -1,0 +1,12 @@
+/* Wizard-specific styles.
+ * Base reset, typography, and element styles come from /styles/v1/wizard.css —
+ * injected automatically; don't repeat them here.
+ * Use only var(--gc-*) tokens; raw colour literals fail the CI stylelint gate.
+ */
+
+main {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    max-width: 480px;
+}

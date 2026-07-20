@@ -1,0 +1,104 @@
+[
+    {
+        "id": 1,
+        "name": "Geolocation-based redirect",
+        "short_descr": "Redirect to the server, configured for the user's country (using Geo-IP)",
+        "long_descr": "Redirect user to the home server. It compares user country code (from Geo-IP data) with configured (as variables) countries, in case of match it redirects to corresponding URL, otherwise to DEFAULT.\nPlease use ISO 3166-1 alpha-2 (two capital letters) country codes.",
+        "api_type": "wasi-http",
+        "binary_id": 1001,
+        "params": [
+            {
+                "name": "DEFAULT",
+                "data_type": "string",
+                "descr": "Default URL, when user country doesn't match",
+                "mandatory": true
+            }
+        ]
+    },
+    {
+        "id": 2,
+        "name": "GitHub artifact",
+        "short_descr": "Get GitHub Actions artifact",
+        "long_descr": "Call the application like <app_URL>/?branch=<branch>&artifact=<artifact_name>. The app will get specified artifact from latest successful build of <branch> branch of <REPO> GitHub repository",
+        "api_type": "wasi-http",
+        "binary_id": 1002,
+        "params": [
+            {
+                "name": "REPO",
+                "data_type": "string",
+                "descr": "Repo name",
+                "mandatory": true
+            },
+            {
+                "name": "TOKEN",
+                "data_type": "string",
+                "descr": "GitHub personal access token",
+                "mandatory": true
+            }
+        ]
+    },
+    {
+        "id": 3,
+        "name": "Markdown renderer",
+        "short_descr": "This application converts Markdown document to HTML, optionally applying CSS",
+        "long_descr": "Call the application like <app_URL>/<relative_path_to_markdown>. The app will get Markdown document from <BASE>/<relative_path_to_markdown> and convert it to HTML. You can specify styles in <HEAD> variable, its content will be added to <head> tag",
+        "api_type": "wasi-http",
+        "binary_id": 1003,
+        "params": [
+            {
+                "name": "BASE",
+                "data_type": "string",
+                "descr": "Base part of origin URL. Markdown document path, specified in URL, is concatenated to the base",
+                "mandatory": true
+            },
+            {
+                "name": "HEAD",
+                "data_type": "string",
+                "descr": "Content on <head> tag, added to resulting HTML document",
+                "mandatory": false
+            }
+        ]
+    },
+    {
+        "id": 4,
+        "name": "S3 uploader",
+        "short_descr": "Upload file to S3 bucket",
+        "long_descr": "The file can be sent to this application using POST or PUT. The application generates S3 signature for the file and uploads it to the configured S3 bucket. It returns the URL of the uploaded file",
+        "api_type": "wasi-http",
+        "binary_id": 1004,
+        "params": [
+            { "name": "ACCESS_KEY",    "data_type": "string", "descr": "Access key",                          "mandatory": true  },
+            { "name": "BASE_HOSTNAME", "data_type": "string", "descr": "Base domain (without region)",        "mandatory": true  },
+            { "name": "BUCKET",        "data_type": "string", "descr": "Bucket name",                         "mandatory": true  },
+            { "name": "MAX_FILE_SIZE", "data_type": "number", "descr": "Max allowed file size in bytes",      "mandatory": false },
+            { "name": "REGION",        "data_type": "string", "descr": "Region name",                         "mandatory": true  },
+            { "name": "SCHEME",        "data_type": "string", "descr": "Scheme (http or https)",              "mandatory": false },
+            { "name": "SECRET_KEY",    "data_type": "string", "descr": "Secret key",                          "mandatory": true  }
+        ]
+    },
+    {
+        "id": 5,
+        "name": "Validate JWT in Authorization header",
+        "short_descr": "Validate JWT, passed in Authorization header in format \"Bearer <token>\"",
+        "long_descr": "This app checks only token signature (using key from \"secret\" env var) and expiration, passed in \"exp\" token claim as UNIX time.",
+        "api_type": "proxy-wasm",
+        "binary_id": 1005,
+        "params": [
+            {
+                "name": "secret",
+                "data_type": "string",
+                "descr": "Token signing key",
+                "mandatory": true
+            }
+        ]
+    },
+    {
+        "id": 6,
+        "name": "CDN Debug",
+        "short_descr": "CDN Debugging utility including speedtest, headers viewer, and IP info.",
+        "long_descr": "Displays detailed request diagnostics: incoming headers, Geo-IP data, edge PoP, timing breakdown, and a simple speedtest endpoint. Useful for verifying CDN routing and debugging edge behaviour.",
+        "api_type": "wasi-http",
+        "binary_id": 1006,
+        "params": []
+    }
+]

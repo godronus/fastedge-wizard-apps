@@ -1,0 +1,5 @@
+node_modules/
+
+# CI-built output, published to the gh-pages branch and served via jsDelivr.
+# Never committed on main — CI is the sole builder (see .github/workflows/deploy.yml).
+release/

@@ -1,0 +1,152 @@
+/* Wizard-specific styles.
+ * Base reset, typography, and element styles come from /styles/v1/wizard.css —
+ * injected automatically; don't repeat them here.
+ * Use only var(--gc-*) tokens; raw colour literals fail the CI stylelint gate.
+ */
+
+/* ── Element overrides ───────────────────────────────────────────────────── */
+
+h1 {
+    margin: 0 0 0.25rem;
+}
+
+input {
+    min-width: 160px;
+}
+
+select {
+    min-width: 220px;
+}
+
+textarea {
+    width: 100%;
+    font-family: monospace;
+}
+
+button {
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+pre {
+    margin: 0.5rem 0 0;
+    max-height: 280px;
+}
+
+/* ── Wizard layout ───────────────────────────────────────────────────────── */
+
+.subtitle {
+    color: var(--gc-font-text-secondary-color);
+    font-size: 0.85rem;
+    margin: 0 0 1.25rem;
+}
+
+.notice {
+    background: var(--gc-background-yellow-color);
+    border: 1px solid var(--gc-alert-stroke-yellow-color);
+    border-radius: 6px;
+    padding: 0.75rem 1rem;
+    margin-bottom: 1.5rem;
+    font-size: 0.82rem;
+    line-height: 1.6;
+}
+
+.notice strong {
+    display: block;
+    margin-bottom: 0.25rem;
+}
+
+.step {
+    border: 1px solid var(--gc-border-primary-color);
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    overflow: hidden;
+}
+
+.step-header {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.65rem 1rem;
+    background: var(--gc-background-secondary-color);
+    border-bottom: 1px solid var(--gc-border-secondary-color);
+}
+
+.step-num {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--gc-font-text-grey-color);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    min-width: 3.5rem;
+}
+
+.step-title {
+    font-weight: 600;
+    font-size: 0.9rem;
+    flex: 1;
+}
+
+.step-icon {
+    font-size: 1rem;
+    min-width: 1.2rem;
+    text-align: center;
+}
+
+.step-body {
+    padding: 0.9rem 1rem;
+}
+
+.badge {
+    font-size: 0.72rem;
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    font-weight: 600;
+}
+
+.badge-auto {
+    background: var(--gc-background-blue-color);
+    color: var(--gc-alert-stroke-blue-color);
+}
+
+.badge-action {
+    background: var(--gc-background-red-color);
+    color: var(--gc-alert-stroke-red-color);
+}
+
+.badge-verify {
+    background: var(--gc-background-green-color);
+    color: var(--gc-alert-stroke-green-color);
+}
+
+.badge-optional {
+    background: var(--gc-background-tertiary-color);
+    color: var(--gc-font-text-secondary-color);
+}
+
+.hint {
+    font-size: 0.8rem;
+    color: var(--gc-font-text-grey-color);
+    margin: 0 0 0.75rem;
+}
+
+.row {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+    align-items: flex-end;
+    flex-wrap: wrap;
+}
+
+/* ── Result states ───────────────────────────────────────────────────────── */
+
+.pass      { color: var(--gc-alert-stroke-green-color); }
+.fail      { color: var(--gc-alert-stroke-red-color); }
+.cancelled { color: var(--gc-alert-stroke-yellow-color); }
+
+#progress-log {
+    font-size: 0.8rem;
+    color: var(--gc-font-text-grey-color);
+    margin: 0.5rem 0;
+    min-height: 1.2rem;
+}

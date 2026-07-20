@@ -1,0 +1,37 @@
+[
+    {
+        "id": 1,
+        "name": "shop-front",
+        "api_type": "wasi-http",
+        "status": 1,
+        "url": "https://shop-front-4732724.fastedge.cdn.gc.onl/",
+        "template": null,
+        "env": { "DEFAULT_THEME": "botique" },
+        "secrets": []
+    },
+    {
+        "id": 2,
+        "name": "private-shop",
+        "api_type": "wasi-http",
+        "status": 1,
+        "url": "https://private-shop-4732724.fastedge.cdn.gc.onl/",
+        "template": null,
+        "env": {
+            "AUTH_MODE": "cookie-session",
+            "JWKS_URL": "https://auth.example.com/auth/.well-known/jwks.json",
+            "PASSWORD": "authme",
+            "SESSION_COOKIE": "cookie-auth"
+        },
+        "secrets": []
+    },
+    {
+        "id": 3,
+        "name": "hello-world",
+        "api_type": "wasi-http",
+        "status": 1,
+        "url": "https://hello-world-4732724.fastedge.cdn.gc.onl/",
+        "template": null,
+        "env": {},
+        "secrets": []
+    }
+]
