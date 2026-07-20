@@ -1,0 +1,8 @@
+/* Pull in step-kit component styles (bundled by esbuild — no runtime fetch). */
+@import url("@gcore/wizard-step-kit/styles");
+
+/* Wizard-specific layout and variants only.
+   Base element styles (button, input, h1…) come from /styles/v1/wizard.css —
+   injected automatically, no <link> needed.
+   Values must use var(--gc-*) tokens; raw literals fail the CI lint gate. */
+

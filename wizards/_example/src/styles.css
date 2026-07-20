@@ -1,0 +1,6 @@
+/* Step-kit component styles (bundled by esbuild — no runtime fetch). */
+@import url("@gcore/wizard-step-kit/styles");
+
+/* No additional styles needed — wizard.css covers base elements,
+   step-kit covers the navigation shell.
+   Add wizard-specific layout or variants here if needed. */

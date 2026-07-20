@@ -1,0 +1,12 @@
+[
+    {
+        "id": 200,
+        "name": "my-example-app",
+        "api_type": "wasi-http",
+        "status": 1,
+        "url": "https://my-example-app.fastedge.gcore.com",
+        "template": 1,
+        "env": {},
+        "secrets": []
+    }
+]

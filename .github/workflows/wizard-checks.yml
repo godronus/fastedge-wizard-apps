@@ -1,0 +1,49 @@
+name: Wizard checks
+
+on:
+  pull_request:
+    paths:
+      - 'wizards/*/src/**'
+      - 'wizards/*/package.json'
+      - '.stylelintrc.json'
+
+jobs:
+  stylelint:
+    name: Stylelint — no raw colours
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: ./.github/setup-node
+
+      - name: Lint CSS
+        run: pnpm lint:css
+
+  visual-and-a11y:
+    name: Screenshot diff + axe
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: ./.github/setup-node
+
+      - name: Build wizards
+        run: pnpm run build
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Run visual + a11y tests
+        run: pnpm test:e2e
+
+      - name: Upload report on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7

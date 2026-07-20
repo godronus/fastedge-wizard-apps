@@ -1,0 +1,34 @@
+import { useState } from 'react';
+import { optional } from '@gcore/fastedge-wizard-sdk';
+import { ResourceRow } from '@gcore/wizard-step-kit/react';
+import { Note } from '../components.jsx';
+
+export function StepStore({ session, f, set }) {
+    const [busy, setBusy] = useState(false);
+    // One call: the user selects an existing store or creates one inline in the same host modal.
+    async function selectStore() {
+        setBusy(true);
+        const rs = await optional(() => session.fastedge.stores.pickOrCreate());
+        setBusy(false);
+        if (rs && rs.length) set({ store: rs[0] });
+    }
+    return (
+        <>
+            <h2 tabIndex={-1}>KV store for TOTP seeds</h2>
+            <p className="totp-lede">
+                Per-user TOTP seeds live in a Gcore KV store. The app reads seeds at verify time
+                and writes them at enrollment.
+            </p>
+            <Note kind="warn">
+                Use a <strong>dedicated, single-tenant</strong> store — seeds are stored
+                plaintext-at-rest, and the API token you add next has write access to everything
+                in it.
+            </Note>
+            <ResourceRow title={f.store ? f.store.name : 'No store selected'}
+                sub={f.store ? `store #${f.store.id}` : 'Create a new store or pick an existing one.'}
+                set={!!f.store} onClear={() => set({ store: null })}>
+                <button onClick={selectStore} disabled={busy}>Select</button>
+            </ResourceRow>
+        </>
+    );
+}

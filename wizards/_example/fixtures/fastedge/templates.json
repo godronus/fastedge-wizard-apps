@@ -1,0 +1,27 @@
+[
+    {
+        "id": 1,
+        "name": "hello-world",
+        "short_descr": "Returns a simple Hello, World! response",
+        "long_descr": "Minimal WASI-HTTP app — useful as a baseline to confirm deployment works.",
+        "api_type": "wasi-http",
+        "binary_id": 100,
+        "params": []
+    },
+    {
+        "id": 2,
+        "name": "request-logger",
+        "short_descr": "Logs incoming request headers to the response body",
+        "long_descr": "Echoes request metadata for inspection — use during development to understand what the portal sends.",
+        "api_type": "wasi-http",
+        "binary_id": 101,
+        "params": [
+            {
+                "name": "LOG_LEVEL",
+                "data_type": "string",
+                "descr": "Verbosity level (debug | info | warn)",
+                "mandatory": false
+            }
+        ]
+    }
+]

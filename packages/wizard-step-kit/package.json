@@ -1,0 +1,23 @@
+{
+    "name": "@gcore/wizard-step-kit",
+    "version": "0.0.1",
+    "private": true,
+    "type": "module",
+    "main": "src/index.js",
+    "exports": {
+        ".": "./src/index.js",
+        "./react": "./react/index.jsx",
+        "./styles": "./src/styles.css"
+    },
+    "scripts": {
+        "build": "node build.mjs"
+    },
+    "peerDependencies": {
+        "react": ">=19"
+    },
+    "devDependencies": {
+        "esbuild": "^0.28.1",
+        "react": "^19.0.0",
+        "react-dom": "^19.0.0"
+    }
+}
