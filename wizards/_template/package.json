@@ -8,7 +8,7 @@
         "dev:watch": "esbuild src/main.js --bundle --watch --outfile=dist/main.js"
     },
     "dependencies": {
-        "@gcore/fastedge-wizard-sdk": "github:godronus/fastedge-wizard-sdk#v0.0.8"
+        "@gcore/fastedge-wizard-sdk": "github:G-Core/fastedge-wizard-sdk#v0.0.1"
     },
     "devDependencies": {
         "esbuild": "^0.25.0"

@@ -91,7 +91,7 @@ GitHub source. Types are included. No npm publish needed.
 
 | Tag / ref | Notes |
 |-----------|-------|
-| `v0.0.8` | Current pin for `write-intents` (hosted at `godronus/fastedge-wizard-sdk` during dev; will move to `G-Core/` org) |
+| `v0.0.1` | Current pin for `write-intents` (`G-Core/fastedge-wizard-sdk`) |
 | `main` | Development — do not pin committed wizards to this |
 
 _Add rows when tags are published._

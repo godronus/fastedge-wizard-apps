@@ -71,7 +71,7 @@ skill (`.claude/agents/sync-wizard-fixtures.md`).
 
 To validate fixtures without starting the server:
 ```bash
-cd wizards/write-intents && node ../../../fastedge-wizard-sdk/bin/dev.mjs dist --validate-only
+cd wizards/write-intents && npx fastedge-wizard-sdk dist --validate-only
 ```
 
 ## E2E Tests
@@ -135,7 +135,7 @@ After bumping, re-validate fixtures — a schema change in the SDK may require
 running `/sync-wizard-fixtures` or editing fixture files manually:
 
 ```bash
-node ../../../fastedge-wizard-sdk/bin/dev.mjs dist --validate-only
+npx fastedge-wizard-sdk dist --validate-only
 ```
 
 ## Change Log
