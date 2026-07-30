@@ -8,11 +8,16 @@ export function StepProfile({ session, f, set }) {
     const [busy, setBusy] = useState(false);
     async function genKeypair() {
         setBusy(true);
-        const r = await optional(() => session.fastedge.secrets.generateKeypair({
-            name: `${f.name}-proof-key`, comment: 'ES256 proof signing key (Profile B)', algorithm: 'ES256',
-        }));
-        setBusy(false);
-        if (r) set({ proofKey: r });
+        try {
+            const r = await optional(() => session.fastedge.secrets.generateKeypair({
+                name: `${f.name}-proof-key`, comment: 'ES256 proof signing key (Profile B)', algorithm: 'ES256',
+            }));
+            if (r) set({ proofKey: r });
+        } catch (err) {
+            console.error('proof keypair generation failed:', err);
+        } finally {
+            setBusy(false);
+        }
     }
     return (
         <>

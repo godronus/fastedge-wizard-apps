@@ -8,9 +8,14 @@ export function StepStore({ session, f, set }) {
     // One call: the user selects an existing store or creates one inline in the same host modal.
     async function selectStore() {
         setBusy(true);
-        const rs = await optional(() => session.fastedge.stores.pickOrCreate());
-        setBusy(false);
-        if (rs && rs.length) set({ store: rs[0] });
+        try {
+            const rs = await optional(() => session.fastedge.stores.pickOrCreate());
+            if (rs && rs.length) set({ store: rs[0] });
+        } catch (err) {
+            console.error('KV store select failed:', err);
+        } finally {
+            setBusy(false);
+        }
     }
     return (
         <>

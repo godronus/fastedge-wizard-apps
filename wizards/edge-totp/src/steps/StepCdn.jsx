@@ -6,13 +6,18 @@ export function StepCdn({ session, f, set }) {
     const [busy, setBusy] = useState(false);
     async function pick() {
         setBusy(true);
-        const r = await optional(() => session.cdn.resources.pick());
-        setBusy(false);
-        if (r) {
-            const derived = f.cdn ? `https://${f.cdn.cname}` : '';
-            const audience = (!f.audience || f.audience === derived) ? `https://${r.cname}` : f.audience;
-            const issuer = (!f.issuer || f.issuer === derived) ? `https://${r.cname}` : f.issuer;
-            set({ cdn: r, audience, issuer });
+        try {
+            const r = await optional(() => session.cdn.resources.pick());
+            if (r) {
+                const derived = f.cdn ? `https://${f.cdn.cname}` : '';
+                const audience = (!f.audience || f.audience === derived) ? `https://${r.cname}` : f.audience;
+                const issuer = (!f.issuer || f.issuer === derived) ? `https://${r.cname}` : f.issuer;
+                set({ cdn: r, audience, issuer });
+            }
+        } catch (err) {
+            console.error('CDN resource pick failed:', err);
+        } finally {
+            setBusy(false);
         }
     }
     return (

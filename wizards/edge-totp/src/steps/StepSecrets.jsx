@@ -8,17 +8,27 @@ export function StepSecrets({ session, f, set }) {
     // (These are keys the wizard defines, not secrets the user brings — so no picker.)
     const generate = (key, name, comment) => async () => {
         setBusy(key);
-        const r = await optional(() => session.fastedge.secrets.generateRandom({ name, comment, bytes: 32 }));
-        setBusy('');
-        if (r) set({ [key]: r });
+        try {
+            const r = await optional(() => session.fastedge.secrets.generateRandom({ name, comment, bytes: 32 }));
+            if (r) set({ [key]: r });
+        } catch (err) {
+            console.error(`secret generate (${key}) failed:`, err);
+        } finally {
+            setBusy('');
+        }
     };
     // Gcore API token is a real external token the user brings → pickOrCreate: they select an
     // existing secret or create one inline (pasting the token) in the same host modal.
     async function selectToken() {
         setBusy('gcore');
-        const rs = await optional(() => session.fastedge.secrets.pickOrCreate());
-        setBusy('');
-        if (rs && rs.length) set({ gcore: rs[0] });
+        try {
+            const rs = await optional(() => session.fastedge.secrets.pickOrCreate());
+            if (rs && rs.length) set({ gcore: rs[0] });
+        } catch (err) {
+            console.error('Gcore API token select failed:', err);
+        } finally {
+            setBusy('');
+        }
     }
     return (
         <>

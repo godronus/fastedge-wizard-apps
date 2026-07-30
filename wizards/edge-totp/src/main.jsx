@@ -17,6 +17,11 @@ import { StepReview } from './steps/StepReview.jsx';
 const hostOrigin =
     new URLSearchParams(location.search).get('hostOrigin') || 'https://portal.gcore.com';
 
+// Escape a user-supplied path prefix for safe use inside a CDN rule regex —
+// otherwise metacharacters (e.g. the '.' in "/auth.v2") match more broadly than
+// the literal path the user typed.
+const escapeRegex = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
 // ── Wizard root ────────────────────────────────────────────────────────────
 
 function Wizard({ session, ctx, filterT, appT }) {
@@ -61,7 +66,7 @@ function Wizard({ session, ctx, filterT, appT }) {
         switch (step) {
             case 0: return !!f.name.trim();
             case 1: return !!f.cdn;
-            case 2: return !!f.audience.trim() && f.authPrefix.startsWith('/');
+            case 2: return !!f.audience.trim() && f.authPrefix.startsWith('/') && f.authPrefix.length > 1;
             case 3: return !!f.store;
             case 4: return !!(f.sessionKey && f.handoff && f.enroll && f.gcore);
             case 5: return f.profile === 'A' || (f.profile === 'B' && !!f.proofKey);
@@ -154,7 +159,7 @@ function Wizard({ session, ctx, filterT, appT }) {
             ],
             newCdnRules: [
                 // Route the login/challenge paths to the app origin.
-                { ref: 'app-route', name: `${f.name}-auth-route`, rule: `^${f.authPrefix}`, weight: 10, originGroupRef: 'app-origin' },
+                { ref: 'app-route', name: `${f.name}-auth-route`, rule: `^${escapeRegex(f.authPrefix)}`, weight: 10, originGroupRef: 'app-origin' },
                 // Enforce the filter on everything else (it self-bypasses AUTH_PREFIX + /health).
                 {
                     ref: 'filter-rule', name: `${f.name}-mfa-filter`, rule: '^/', weight: 1,
@@ -226,10 +231,13 @@ function App() {
                     setState({ status: 'error', error: 'Expected one proxy-wasm filter and one wasi-http app. Check companion templates.' });
                     return;
                 }
-                document.getElementById('root').hidden = false;
                 setState({ status: 'ready', session, ctx, filterT, appT });
             } catch (err) {
                 setState({ status: 'error', error: `${err.code ?? 'error'}: ${err.message}` });
+            } finally {
+                // Reveal the root for *every* terminal state — error messages render
+                // into #root too, so leaving it hidden on failure shows a blank page.
+                document.getElementById('root').hidden = false;
             }
         })();
         return () => session?.dispose();
