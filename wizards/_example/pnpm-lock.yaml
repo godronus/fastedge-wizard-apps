@@ -8,12 +8,12 @@ importers:
 
   .:
     dependencies:
-      '@gcore/fastedge-wizard-sdk':
-        specifier: file:../../../../fastedge-wizard-sdk
-        version: file:../../../../fastedge-wizard-sdk
       '@gcore/wizard-step-kit':
         specifier: file:../../packages/wizard-step-kit
         version: file:../../packages/wizard-step-kit(react@19.2.7)
+      '@gcoredev/fastedge-wizard-sdk':
+        specifier: latest
+        version: 0.0.1
     devDependencies:
       esbuild:
         specifier: ^0.28.1
@@ -177,15 +177,15 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@gcore/fastedge-wizard-sdk@file:../../../../fastedge-wizard-sdk':
-    resolution: {directory: ../../../../fastedge-wizard-sdk, type: directory}
-    engines: {node: '>=22'}
-    hasBin: true
-
   '@gcore/wizard-step-kit@file:../../packages/wizard-step-kit':
     resolution: {directory: ../../packages/wizard-step-kit, type: directory}
     peerDependencies:
       react: '>=19'
+
+  '@gcoredev/fastedge-wizard-sdk@0.0.1':
+    resolution: {integrity: sha512-LAP52Fxuqj0cZAnuJMf/RSYzObpbDjjXoTE8osIQvT8fBc4AP/6Y8Fy02pCjVT2D9x0JreMQbVuRkdlxwXUNYw==}
+    engines: {node: '>=22'}
+    hasBin: true
 
   esbuild@0.28.1:
     resolution: {integrity: sha512-HrJrvZv5ayxBzPfwphOoNzkzOIIlifzk0KJrGK2c8R4+LKpMtpYLQeUdjnwjWv/LZlkH2laZk+4w78pi99D4Vw==}
@@ -279,13 +279,13 @@ snapshots:
   '@esbuild/win32-x64@0.28.1':
     optional: true
 
-  '@gcore/fastedge-wizard-sdk@file:../../../../fastedge-wizard-sdk':
-    dependencies:
-      zod: 3.25.76
-
   '@gcore/wizard-step-kit@file:../../packages/wizard-step-kit(react@19.2.7)':
     dependencies:
       react: 19.2.7
+
+  '@gcoredev/fastedge-wizard-sdk@0.0.1':
+    dependencies:
+      zod: 3.25.76
 
   esbuild@0.28.1:
     optionalDependencies:

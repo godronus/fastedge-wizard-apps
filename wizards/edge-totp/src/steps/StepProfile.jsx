@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { OptionalPanels, WizardPanel } from '@gcore/wizard-step-kit/react';
-import { optional } from '@gcore/fastedge-wizard-sdk';
+import { optional } from '@gcoredev/fastedge-wizard-sdk';
 import { ResourceRow } from '@gcore/wizard-step-kit/react';
 import { Field } from '../components.jsx';
 

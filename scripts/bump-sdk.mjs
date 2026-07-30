@@ -1,76 +1,71 @@
 /**
- * Bumps the @gcore/fastedge-wizard-sdk dependency ref across package.json files
- * and normalises them all to the canonical `github:` form (also converts any
- * stray `file:` refs). Verifies the ref actually exists on the SDK repo before
- * writing, so a typo (e.g. `#0.0.1` when the tag is `v0.0.1`) aborts instead of
- * committing pins that fail to install.
+ * Pins the @gcoredev/fastedge-wizard-sdk dependency to a specific published npm
+ * version across the *real* wizards (non-underscore dirs). Underscore templates
+ * and examples (_template, _example…) intentionally track "latest" and are never
+ * touched. Verifies the version is published on npm before writing.
  *
- *   node scripts/bump-sdk.mjs <ref> [--all] [--dry-run] [--no-verify]
+ *   node scripts/bump-sdk.mjs <version> [--dry-run] [--no-verify]
  *
- *   <ref>         tag/branch on the SDK repo, e.g. v0.0.1
- *   (default)     root package.json + underscore wizards (_template, _example…)
- *   --all         also bump real wizards (normally pinned to their tested ref)
+ *   <version>     published SDK version, e.g. 1.2.3 (leading v optional)
  *   --dry-run     print changes, write nothing
- *   --no-verify   skip the ls-remote existence check
+ *   --no-verify   skip the npm existence check
  *   --selftest    run the transform's assertions and exit
  */
 import { execSync } from 'node:child_process';
-import { readFileSync, writeFileSync, existsSync } from 'node:fs';
-import { readdirSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const SLUG = 'G-Core/fastedge-wizard-sdk';
-const SDK_URL = `https://github.com/${SLUG}.git`;
-const DEP = '@gcore/fastedge-wizard-sdk';
-const DEP_RE = /("@gcore\/fastedge-wizard-sdk":\s*)"[^"]*"/;
+const PKG = '@gcoredev/fastedge-wizard-sdk';
+const DEP_RE = /("@gcoredev\/fastedge-wizard-sdk":\s*)"[^"]*"/;
 
 const root = fileURLToPath(new URL('..', import.meta.url));
 
-/** Swap the SDK dep value in a package.json's raw text. Returns null if absent. */
-function bumpText(text, ref) {
+/** Pin the SDK dep to an exact version in a package.json's raw text. Null if absent. */
+function pinText(text, version) {
   if (!DEP_RE.test(text)) return null;
-  return text.replace(DEP_RE, `$1"github:${SLUG}#${ref}"`);
+  return text.replace(DEP_RE, `$1"${version}"`);
 }
 
 function selfTest() {
-  const gh = '{\n    "@gcore/fastedge-wizard-sdk": "github:G-Core/fastedge-wizard-sdk#0.0.1"\n}';
-  const file = '{\n    "@gcore/fastedge-wizard-sdk": "file:../../../../fastedge-wizard-sdk"\n}';
-  const want = '"github:G-Core/fastedge-wizard-sdk#v0.0.1"';
-  console.assert(bumpText(gh, 'v0.0.1').includes(want), 'github ref not bumped');
-  console.assert(bumpText(file, 'v0.0.1').includes(want), 'file ref not converted');
-  console.assert(bumpText('{"react":"19"}', 'v0.0.1') === null, 'missing dep not null');
+  const latest = '{\n    "@gcoredev/fastedge-wizard-sdk": "latest"\n}';
+  const pinned = '{\n    "@gcoredev/fastedge-wizard-sdk": "1.0.0"\n}';
+  console.assert(pinText(latest, '1.2.3').includes('"1.2.3"'), 'latest not pinned');
+  console.assert(pinText(pinned, '1.2.3').includes('"1.2.3"'), 'old pin not replaced');
+  console.assert(pinText('{"react":"19"}', '1.2.3') === null, 'missing dep not null');
   console.log('selftest ok');
 }
 
 const args = process.argv.slice(2);
 if (args.includes('--selftest')) { selfTest(); process.exit(0); }
 
-const flags = new Set(args.filter(a => a.startsWith('--')));
-const ref = args.find(a => !a.startsWith('--'));
-if (!ref) {
-  console.error('usage: node scripts/bump-sdk.mjs <ref> [--all] [--dry-run] [--no-verify]');
+const flags = new Set(args.filter((a) => a.startsWith('--')));
+const raw = args.find((a) => !a.startsWith('--'));
+if (!raw) {
+  console.error('usage: node scripts/bump-sdk.mjs <version> [--dry-run] [--no-verify]');
   process.exit(1);
 }
+const version = raw.replace(/^v/, '');
 
-// Verify the ref resolves on the SDK repo before touching anything.
+// Verify the version is actually published before touching anything.
 if (!flags.has('--no-verify')) {
-  const refs = execSync(`git ls-remote --tags --heads ${SDK_URL}`, { encoding: 'utf8' });
-  const names = refs.split('\n').map(l => l.split('\t')[1]).filter(Boolean);
-  const found = names.includes(`refs/tags/${ref}`) || names.includes(`refs/heads/${ref}`);
-  if (!found) {
-    console.error(`✗ ref "${ref}" not found on ${SLUG}. Available:`);
-    for (const n of names) console.error(`    ${n.replace(/^refs\/(tags|heads)\//, '')}`);
+  let found = '';
+  try {
+    found = execSync(`npm view ${PKG}@${version} version`, { encoding: 'utf8' }).trim();
+  } catch {
+    /* npm exits non-zero when the version doesn't exist */
+  }
+  if (found !== version) {
+    console.error(`✗ ${PKG}@${version} is not published on npm.`);
     process.exit(1);
   }
 }
 
-// Build the target file list.
-const targets = [join(root, 'package.json')];
+// Real wizards only — underscore templates/examples stay on "latest".
+const targets = [];
 for (const e of readdirSync(join(root, 'wizards'), { withFileTypes: true })) {
-  if (!e.isDirectory() || e.name.startsWith('.')) continue;
-  const isTemplate = e.name.startsWith('_');
-  if (isTemplate || flags.has('--all')) targets.push(join(root, 'wizards', e.name, 'package.json'));
+  if (!e.isDirectory() || e.name.startsWith('_') || e.name.startsWith('.')) continue;
+  targets.push(join(root, 'wizards', e.name, 'package.json'));
 }
 
 const dry = flags.has('--dry-run');
@@ -78,14 +73,14 @@ let changed = 0;
 for (const file of targets) {
   if (!existsSync(file)) continue;
   const before = readFileSync(file, 'utf8');
-  const after = bumpText(before, ref);
+  const after = pinText(before, version);
   const rel = file.slice(root.length);
-  if (after === null) { console.log(`  skip  ${rel} (no ${DEP})`); continue; }
-  if (after === before) { console.log(`  ok    ${rel} (already #${ref})`); continue; }
+  if (after === null) { console.log(`  skip  ${rel} (no ${PKG})`); continue; }
+  if (after === before) { console.log(`  ok    ${rel} (already ${version})`); continue; }
   if (!dry) writeFileSync(file, after);
-  console.log(`  ${dry ? 'would' : 'bump '} ${rel} → #${ref}`);
+  console.log(`  ${dry ? 'would' : 'pin  '} ${rel} → ${version}`);
   changed++;
 }
 
 console.log(`\n${dry ? '[dry-run] ' : ''}${changed} file(s) ${dry ? 'would change' : 'changed'}`);
-if (changed && !dry) console.log('→ run `pnpm install` (root, and any bumped wizard) to refresh lockfiles');
+if (changed && !dry) console.log('→ run `pnpm install` in each pinned wizard to refresh lockfiles');

@@ -11,9 +11,9 @@ importers:
       '@axe-core/playwright':
         specifier: ^4.12.1
         version: 4.12.1(playwright-core@1.61.1)
-      '@gcore/fastedge-wizard-sdk':
-        specifier: github:G-Core/fastedge-wizard-sdk#v0.0.1
-        version: https://codeload.github.com/G-Core/fastedge-wizard-sdk/tar.gz/9307657f1c83e94869c769c0f35a36d67d79566a
+      '@gcoredev/fastedge-wizard-sdk':
+        specifier: latest
+        version: 0.0.1
       '@playwright/test':
         specifier: ^1.61.1
         version: 1.61.1
@@ -260,9 +260,8 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@gcore/fastedge-wizard-sdk@https://codeload.github.com/G-Core/fastedge-wizard-sdk/tar.gz/9307657f1c83e94869c769c0f35a36d67d79566a':
-    resolution: {tarball: https://codeload.github.com/G-Core/fastedge-wizard-sdk/tar.gz/9307657f1c83e94869c769c0f35a36d67d79566a}
-    version: 0.0.1
+  '@gcoredev/fastedge-wizard-sdk@0.0.1':
+    resolution: {integrity: sha512-LAP52Fxuqj0cZAnuJMf/RSYzObpbDjjXoTE8osIQvT8fBc4AP/6Y8Fy02pCjVT2D9x0JreMQbVuRkdlxwXUNYw==}
     engines: {node: '>=22'}
     hasBin: true
 
@@ -924,7 +923,7 @@ snapshots:
   '@esbuild/win32-x64@0.28.1':
     optional: true
 
-  '@gcore/fastedge-wizard-sdk@https://codeload.github.com/G-Core/fastedge-wizard-sdk/tar.gz/9307657f1c83e94869c769c0f35a36d67d79566a':
+  '@gcoredev/fastedge-wizard-sdk@0.0.1':
     dependencies:
       zod: 3.25.76
 

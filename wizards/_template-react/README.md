@@ -73,5 +73,5 @@ Run `pnpm run build` to see esbuild's size output. The minified size is what shi
 
 ## SDK pin
 
-Update the `@gcore/fastedge-wizard-sdk` version in `package.json` to the latest tag
+Update the `@gcoredev/fastedge-wizard-sdk` version in `package.json` to the latest tag
 before opening a PR. Current tags are listed in `context/INDEX.md`.

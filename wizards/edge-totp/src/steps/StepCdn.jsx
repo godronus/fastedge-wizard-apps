@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { optional } from '@gcore/fastedge-wizard-sdk';
+import { optional } from '@gcoredev/fastedge-wizard-sdk';
 import { ResourceRow } from '@gcore/wizard-step-kit/react';
 
 export function StepCdn({ session, f, set }) {

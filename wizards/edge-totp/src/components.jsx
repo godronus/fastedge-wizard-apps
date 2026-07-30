@@ -1,5 +1,5 @@
 // Wizard-local presentational helpers. `optional()` now lives in the SDK
-// (`@gcore/fastedge-wizard-sdk`) and the resource row in the step-kit
+// (`@gcoredev/fastedge-wizard-sdk`) and the resource row in the step-kit
 // (`@gcore/wizard-step-kit/react` → ResourceRow).
 
 export function Note({ kind = 'info', children }) {

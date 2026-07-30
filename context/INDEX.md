@@ -22,7 +22,7 @@ for architecture, protocol, trust model, and intent catalog).
 | Component | Location |
 |-----------|----------|
 | Portal host (Angular, bridge, intent router) | `fastedge-frontend` |
-| Guest SDK (`@gcore/fastedge-wizard-sdk`) | `G-Core/fastedge-wizard-sdk` |
+| Guest SDK (`@gcoredev/fastedge-wizard-sdk`) | `G-Core/fastedge-wizard-sdk` |
 | Proxy WASM app | `FastEdgeApps-coordinator/.../wizardApp` |
 | Design docs (architecture, protocol, trust model) | `fastedge-frontend/docs/wizards/` |
 | SDK migration + consumption guide | `fastedge-wizard-sdk/context/INDEX.md` |
@@ -78,14 +78,14 @@ The portal reads `WIZARD_SOURCE_CONFIG` and builds the proxy path from `repo` +
 
 | | |
 |--|--|
-| Package | `@gcore/fastedge-wizard-sdk` |
+| Package | `@gcoredev/fastedge-wizard-sdk` |
 | Repo | `G-Core/fastedge-wizard-sdk` (standalone public repo) |
-| Install | `"github:G-Core/fastedge-wizard-sdk#<tag>"` in `package.json` |
+| Install | `"@gcoredev/fastedge-wizard-sdk": "latest"` in `package.json` (npm) |
 | Build | `esbuild src/main.js --bundle --format=esm --outfile=main.js` |
 | Why bundled | Proxy enforces `connect-src 'none'` — no runtime CDN fetch allowed |
 
-The SDK has a `prepare` script, so `pnpm install` auto-builds `dist/` from the
-GitHub source. Types are included. No npm publish needed.
+The SDK ships prebuilt `dist/` in its npm tarball (built in CI before publish);
+types are included.
 
 ### SDK version log
 
@@ -100,7 +100,7 @@ _Add rows when tags are published._
 
 ### Session API (convenience summary)
 
-> **Authoritative source:** `node_modules/@gcore/fastedge-wizard-sdk/dist/sdk.d.ts` + `types.d.ts` (source: `G-Core/fastedge-wizard-sdk`, public). The list below is a quick reference; the `.d.ts` files are the source of truth and include parameter shapes this summary omits.
+> **Authoritative source:** `node_modules/@gcoredev/fastedge-wizard-sdk/dist/sdk.d.ts` + `types.d.ts` (source: `G-Core/fastedge-wizard-sdk`, public). The list below is a quick reference; the `.d.ts` files are the source of truth and include parameter shapes this summary omits.
 
 ```js
 session.context.get()
@@ -215,7 +215,7 @@ Slash commands (`.claude/skills/`) — invoke from the `fastedge-wizard-apps/` w
 ## Orange's Repo
 
 Orange (`Orange/gcore-wizards`) has their own allow-list entry on the proxy.
-Each wizard is a subdirectory with `src/` and the same `@gcore/fastedge-wizard-sdk`
+Each wizard is a subdirectory with `src/` and the same `@gcoredev/fastedge-wizard-sdk`
 dep. They manage their own SDK version pins, builds, and publish/serve strategy
 independently — their `WIZARD_SOURCE_CONFIG` ref/cdn need not match ours.
 

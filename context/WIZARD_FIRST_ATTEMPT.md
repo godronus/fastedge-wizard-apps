@@ -20,7 +20,7 @@ leads you to:
 - what `CONTRIBUTING.md` links (e.g. `context/INDEX.md`),
 - the existing example wizard(s) under `wizards/`,
 - the SDK's typed surface after `pnpm install` (the installed
-  `@gcore/fastedge-wizard-sdk` types are fair game — a real contributor has them),
+  `@gcoredev/fastedge-wizard-sdk` types are fair game — a real contributor has them),
 - the target template's own repo/docs (below — you're integrating against it).
 
 **Off-limits** (you would not have these as an external contributor):

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import { connect, WizardError } from '@gcore/fastedge-wizard-sdk';
+import { connect, WizardError } from '@gcoredev/fastedge-wizard-sdk';
 import '@gcore/wizard-step-kit'; // side-effect: registers the custom elements
 import { WizardShell, WizardStep } from '@gcore/wizard-step-kit/react';
 

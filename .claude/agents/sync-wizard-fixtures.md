@@ -257,7 +257,7 @@ Apply maps — cross-references are re-linked so the fixture set stays internall
 ### 5 — Validate against SDK schemas
 
 Load `fixtureSchemas` from the wizard's installed SDK:
-`wizards/<name>/node_modules/@gcore/fastedge-wizard-sdk/dist/schemas.js`
+`wizards/<name>/node_modules/@gcoredev/fastedge-wizard-sdk/dist/schemas.js`
 
 The schema keys use slash-path format — access with bracket notation. Validate only selected types that have items:
 - `fixtureSchemas['fastedge/templates'].parse(selectedTemplates)`

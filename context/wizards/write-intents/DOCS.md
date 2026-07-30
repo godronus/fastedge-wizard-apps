@@ -15,7 +15,7 @@ the SDK into `main.js`).
 wizards/write-intents/
   src/
     index.html    ← markup; loads ./main.js as a module
-    main.js       ← all bridge logic; one import from @gcore/fastedge-wizard-sdk
+    main.js       ← all bridge logic; one import from @gcoredev/fastedge-wizard-sdk
     styles.css    ← design-token CSS; copied to dist alongside main.js
   fixtures/       ← committed mock-host data (see Fixtures section below)
     templates.json
@@ -127,8 +127,8 @@ Note: `deployment.*` intents are un-namespaced (top-level) by design — see
 See `context/INDEX.md` SDK version log. To bump:
 
 ```bash
-# in wizards/write-intents/
-pnpm add github:G-Core/fastedge-wizard-sdk#<new-tag>
+# in your wizard dir
+pnpm add @gcoredev/fastedge-wizard-sdk@latest   # or @<version> to pin
 # CI rebuilds and republishes on merge — no build output to commit
 ```
 

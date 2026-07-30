@@ -1,4 +1,4 @@
-import { connect, WizardError } from '@gcore/fastedge-wizard-sdk';
+import { connect, WizardError } from '@gcoredev/fastedge-wizard-sdk';
 
 const hostOrigin = new URLSearchParams(location.search).get('hostOrigin');
 const main = document.querySelector('main');

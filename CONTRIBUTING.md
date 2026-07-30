@@ -65,18 +65,18 @@ cp -r wizards/_template-react wizards/<your-wizard-name>  # React
 cd wizards/<your-wizard-name>
 ```
 
-Edit `package.json` — set `"name"` and verify the SDK pin (the templates already have a pin; update to the latest tag if needed — check `context/INDEX.md`):
+Edit `package.json` — set `"name"` and the SDK dependency (templates and examples track `"latest"`; a production wizard can pin a specific published version — check `context/INDEX.md`):
 
 ```json
 {
   "name": "your-wizard-name",
   "dependencies": {
-    "@gcore/fastedge-wizard-sdk": "github:G-Core/fastedge-wizard-sdk#<latest-tag>"
+    "@gcoredev/fastedge-wizard-sdk": "latest"
   }
 }
 ```
 
-> **Gcore team / fastedge-frontend monorepo**: use `"file:../../../fastedge-wizard-sdk"` instead of the `github:` pin — the SDK lives at `fastedge-wizard-sdk/` inside `fastedge-frontend/`. Three `../` from `wizards/<name>/` reaches it. The `github:` pin is the default for all contributors; the `file:` path is a local-dev override only.
+> **Gcore team / fastedge-frontend monorepo**: use `"file:../../../fastedge-wizard-sdk"` instead of the npm dep — the SDK lives at `fastedge-wizard-sdk/` inside `fastedge-frontend/`. Three `../` from `wizards/<name>/` reaches it. The npm dep is the default for all contributors; the `file:` path is a local-dev override only.
 
 Install and run the mock host:
 
@@ -244,7 +244,7 @@ const templates = await session.fastedge.templates.list();
 
 No `fetch()`, no `XMLHttpRequest`, no WebSocket.
 
-The full capability surface — everything you can do through the bridge — is the SDK's `WizardSession` type. After `pnpm install`, the best entry point is `node_modules/@gcore/fastedge-wizard-sdk/docs/quickstart.md` — it covers `connect()`, intent patterns, error handling, and fixture setup. The `.d.ts` files (`dist/types.d.ts`, `dist/sdk.d.ts`) are the type-level source of truth. The summary in `context/INDEX.md` is a convenience reference.
+The full capability surface — everything you can do through the bridge — is the SDK's `WizardSession` type. After `pnpm install`, the best entry point is `node_modules/@gcoredev/fastedge-wizard-sdk/docs/quickstart.md` — it covers `connect()`, intent patterns, error handling, and fixture setup. The `.d.ts` files (`dist/types.d.ts`, `dist/sdk.d.ts`) are the type-level source of truth. The summary in `context/INDEX.md` is a convenience reference.
 
 For a runnable worked example of every intent in sequence, see `wizards/_example-intents/src/main.js` — it exercises all v1 write intents with inline docs explaining consent points, ref→id resolution, and rollback semantics.
 

@@ -81,5 +81,5 @@ pnpm run build      # from repo root — runs build in every workspace package
 - `packages/*` is for shared build-time dependencies only (React components, utils).
   These are bundled away at build time — never fetched at runtime.
 - Never commit `node_modules/`.
-- Pin the SDK to a tag in any wizard that ships to production. `#main` is for
-  local development only.
+- Production wizards can pin the SDK to a specific published npm version
+  (`node scripts/bump-sdk.mjs <version>`); templates and examples track `"latest"`.

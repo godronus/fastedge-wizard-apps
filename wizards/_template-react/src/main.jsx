@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import { connect } from '@gcore/fastedge-wizard-sdk';
+import { connect } from '@gcoredev/fastedge-wizard-sdk';
 import '@gcore/wizard-step-kit'; // side-effect: registers <gc-wizard-shell> and <gc-optional-panels>
 import { WizardShell, WizardStep } from '@gcore/wizard-step-kit/react';
 

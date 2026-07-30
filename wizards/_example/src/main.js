@@ -2,7 +2,7 @@
 // custom elements. The browser upgrades any already-parsed instances of
 // those tags automatically when customElements.define() is called.
 import '@gcore/wizard-step-kit';
-import { connect, WizardError } from '@gcore/fastedge-wizard-sdk';
+import { connect, WizardError } from '@gcoredev/fastedge-wizard-sdk';
 
 // The portal appends ?hostOrigin=<its-own-origin> when it opens the wizard.
 // connect() validates that the INIT message comes from exactly this origin —

@@ -19,7 +19,7 @@
  * Vanilla JS — no framework — so the intent API surface is the star.
  */
 
-import { connect, WizardError } from '@gcore/fastedge-wizard-sdk';
+import { connect, WizardError } from '@gcoredev/fastedge-wizard-sdk';
 
 // ── Logging helpers ───────────────────────────────────────────────────────────
 
