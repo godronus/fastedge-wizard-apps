@@ -6,6 +6,7 @@
         "assemble": "node scripts/assemble.mjs",
         "bump:sdk": "node scripts/bump-sdk.mjs",
         "lint:css": "stylelint \"wizards/*/src/**/*.css\" \"packages/*/src/**/*.css\" && node scripts/check-tokens.mjs",
+        "lint:css:fix": "stylelint \"wizards/*/src/**/*.css\" \"packages/*/src/**/*.css\" --fix",
         "test:e2e": "playwright test"
     },
     "devDependencies": {

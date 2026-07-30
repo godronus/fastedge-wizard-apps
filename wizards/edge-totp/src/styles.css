@@ -4,7 +4,8 @@
 /* Wizard-specific layout and variants only.
    Base element styles (button, input, h1…) come from /styles/v1/wizard.css —
    injected automatically, no <link> needed.
-   Values must use var(--gc-*) tokens; raw literals fail the CI lint gate. */
+   Colours must use var(--gc-*) tokens; raw colour literals fail the CI lint
+   gate. Non-colour literals (sizes, lengths like 60ch/1rem) are fine. */
 
 .totp-lede {
     color: var(--gc-wizard-text-muted);

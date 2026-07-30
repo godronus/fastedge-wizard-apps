@@ -203,13 +203,24 @@ gc-resource-row {
     margin-bottom: 0.75rem;
 }
 
+.wizard-row-badge {
+    flex-shrink: 0;
+    white-space: nowrap;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.125rem 0.5rem;
+    border-radius: var(--gc-wizard-radius);
+    border: 1px solid var(--gc-wizard-border);
+    color: var(--gc-wizard-text-muted);
+}
+
 /* Unset: badge is redundant (title says "No X selected"), hide it */
 gc-resource-row:not([set]) .wizard-row-badge {
     display: none;
 }
 
 /* Unset: action children right-aligned at the bottom of the card */
-gc-resource-row:not([set]) > :not(.wizard-row-main):not(.wizard-row-badge) {
+gc-resource-row:not([set]) > :not(.wizard-row-main, .wizard-row-badge) {
     align-self: flex-end;
     display: flex;
     gap: 0.5rem;
@@ -225,7 +236,7 @@ gc-resource-row[set] {
     padding: 0.625rem 1rem;
 }
 
-gc-resource-row[set] > :not(.wizard-row-main):not(.wizard-row-badge) {
+gc-resource-row[set] > :not(.wizard-row-main, .wizard-row-badge) {
     display: none;
 }
 
@@ -242,17 +253,6 @@ gc-resource-row[set] > :not(.wizard-row-main):not(.wizard-row-badge) {
 .wizard-row-sub {
     color: var(--gc-wizard-text-muted);
     font-size: 0.8125rem;
-}
-
-.wizard-row-badge {
-    flex-shrink: 0;
-    white-space: nowrap;
-    font-size: 0.75rem;
-    font-weight: 600;
-    padding: 0.125rem 0.5rem;
-    border-radius: var(--gc-wizard-radius);
-    border: 1px solid var(--gc-wizard-border);
-    color: var(--gc-wizard-text-muted);
 }
 
 .wizard-row-badge--set {

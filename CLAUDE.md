@@ -83,3 +83,8 @@ pnpm run build      # from repo root — runs build in every workspace package
 - Never commit `node_modules/`.
 - Production wizards can pin the SDK to a specific published npm version
   (`node scripts/bump-sdk.mjs <version>`); templates and examples track `"latest"`.
+- **No PR merges unless `pnpm test:e2e` (visual snapshot + axe) passes.** The
+  suite auto-discovers every non-underscore wizard under `wizards/` (a blacklist
+  via `E2E_SKIP` in `e2e/theme.spec.ts`, not a whitelist), so a new wizard is
+  covered by default. Adding one means: give it bridge stubs in `OVERRIDES` if it
+  needs more than empty responses to render, then commit its baseline snapshots.
