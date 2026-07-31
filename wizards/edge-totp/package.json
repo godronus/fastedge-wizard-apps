@@ -8,7 +8,7 @@
         "dev:watch": "esbuild src/main.jsx --bundle --format=esm --jsx=automatic --watch --outfile=dist/main.js"
     },
     "dependencies": {
-        "@gcoredev/fastedge-wizard-sdk": "latest",
+        "@gcoredev/fastedge-wizard-sdk": "0.0.2",
         "@gcore/wizard-step-kit": "file:../../packages/wizard-step-kit",
         "react": "^19.0.0",
         "react-dom": "^19.0.0"
