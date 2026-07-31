@@ -30,7 +30,7 @@ Starters and examples under `wizards/`:
 ## Repo layout
 
 ```
-wizards/<name>/       your wizard — src/ is the only thing committed; CI builds it
+wizards/<name>/       your wizard — commit src/, package.json + lockfile (and fixtures/ if used); CI builds it
   _template*/         starter skeletons (not deployed)
 packages/             shared build-time code (e.g. @gcore/wizard-step-kit); bundled in, never fetched at runtime
 scripts/              build-all, assemble, token check, SDK bump

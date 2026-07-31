@@ -14,7 +14,7 @@
  *   status   : 'idle' | 'planning' | 'applying' | 'done' | 'error'
  *   plan     : DeploymentPlan | null            — { summary, steps[], warnings[] }
  *   progress : DeploymentProgressEvent[]         — [{ step, total, describe }]
- *   result   : DeploymentApplyResult | null      — { status, createdFastedge*, ... }
+ *   result   : DeploymentApplyResult | null      — { status, createdFastedgeApps, createdCdn*, ... }
  *   error    : string | null
  */
 const EMPTY = { status: 'idle', plan: null, progress: [], result: null, error: null };
@@ -76,7 +76,6 @@ class GcDeployProgress extends HTMLElement {
             (result.createdFastedgeApps || []).forEach(a =>
                 ul.append(mk('li', null, `${a.ref}: app #${a.id}${a.url ? ` → ${a.url}` : ''}`))
             );
-            appendCreated(ul, result.createdFastedgeStores, 'store');
             appendCreated(ul, result.createdCdnOrigins, 'CDN origin');
             appendCreated(ul, result.createdCdnRules, 'CDN rule');
             if (ul.children.length) box.append(ul);

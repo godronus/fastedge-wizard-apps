@@ -189,7 +189,7 @@ async function demo() {
     // generateKeypair is asymmetric (private key stored as secret + public key JWK
     // returned to the wizard).
     //
-    // The returned ref (id + name + origin) is used in secretRefs or newFastedgeSecrets.
+    // The returned ref (id + name + origin) is referenced by { id } in an app's secretRefs.
     //
     // Consent point: portal picker. WizardError('user_cancelled') if dismissed.
     section('5. secrets.pickOrCreate({ bytes }) — random HMAC session key');
@@ -342,7 +342,7 @@ async function demo() {
             {
                 ref: 'routing-rule',
                 name: 'example-route-all',
-                rule: '^/',         // regex — matches all paths
+                rule: '^/.*',       // regex — matches every path (the CDN API rejects '^/', a rule of only slashes)
                 weight: 10,         // lower weight = lower priority (processed last)
                 // originGroupRef points at a newCdnOrigins[*].ref.
                 // Resolved to the created origin group id during apply.

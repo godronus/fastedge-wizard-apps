@@ -69,7 +69,7 @@ WIZARD_SOURCE_CONFIG={"repo":"G-Core/FastEdge-Wizard-apps","path":"gh-pages/edge
 
 ## Fixtures & e2e
 
-`fixtures/` covers both templates, their full param lists, and enough CDN/secret/store data to plan and apply in the mock host. Refresh live data with `/sync-wizard-fixtures`. The repo-root Playwright suite (`pnpm test:e2e`) screenshots the wizard in both themes and runs axe.
+`fixtures/fastedge/templates.json` holds both templates and their full param lists — enough for the mock host to render the wizard. Refresh live data with `/sync-wizard-fixtures`. The repo-root Playwright suite (`pnpm test:e2e`) screenshots the wizard in both themes and runs axe.
 
 ## SDK version
 
