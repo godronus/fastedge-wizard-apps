@@ -42,19 +42,19 @@ export function StepSecrets({ session, f, set }) {
                 sub="HS256, edge-internal. App signs mfa_session; filter verifies it." set={!!f.sessionKey}
                 onClear={() => set({ sessionKey: null })}>
                 <button onClick={generate('sessionKey', `${f.name}-mfa-session-key`, 'Shared HS256 mfa_session key')}
-                    disabled={!!busy}>Generate</button>
+                    disabled={!!busy}>Select</button>
             </ResourceRow>
             <ResourceRow title={f.handoff ? f.handoff.name : 'Handoff key'}
                 sub="HS256, shared with your origin. Copy the generated value into your origin's login code." set={!!f.handoff}
                 onClear={() => set({ handoff: null })}>
                 <button onClick={generate('handoff', `${f.name}-handoff-key`, 'HS256 handoff ticket key (shared with origin)')}
-                    disabled={!!busy}>Generate</button>
+                    disabled={!!busy}>Select</button>
             </ResourceRow>
             <ResourceRow title={f.enroll ? f.enroll.name : 'Enroll API key'}
                 sub="Bearer token gating POST {AUTH_PREFIX}/enroll." set={!!f.enroll}
                 onClear={() => set({ enroll: null })}>
                 <button onClick={generate('enroll', `${f.name}-enroll-api-key`, 'Bearer token for /enroll')}
-                    disabled={!!busy}>Generate</button>
+                    disabled={!!busy}>Select</button>
             </ResourceRow>
             <ResourceRow title="Gcore API token"
                 sub="Real token with KV write access — select an existing secret or create one." set={!!f.gcore}
