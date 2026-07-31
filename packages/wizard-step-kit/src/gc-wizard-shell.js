@@ -1,0 +1,202 @@
+/**
+ * <gc-wizard-shell> — stepped navigation shell.
+ *
+ * Usage:
+ *   <gc-wizard-shell can-advance label-next="Next" label-finish="Deploy">
+ *     <gc-wizard-step title="App">...</gc-wizard-step>
+ *     <gc-wizard-step title="Secrets">...</gc-wizard-step>
+ *   </gc-wizard-shell>
+ *
+ * Events (all bubble):
+ *   navigate  — cancelable; detail: { from, to, reason: 'next'|'back'|'goto' }
+ *   navigated — settled;    detail: { from, to }
+ *   finish    — last step Next clicked
+ *   cancel    — Cancel clicked
+ *
+ * Attributes:
+ *   can-advance      (boolean) — enables the Next/Finish button
+ *   error            (string)  — validation message shown above nav
+ *   label-back       (string, default "Back")
+ *   label-next       (string, default "Next")
+ *   label-cancel     (string, default "Cancel")
+ *   label-finish     (string, default "Finish")
+ */
+class GcWizardShell extends HTMLElement {
+    static observedAttributes = ['can-advance', 'error', 'label-back', 'label-next', 'label-cancel', 'label-finish'];
+
+    #current = 0;
+    #highWaterMark = 0;
+    #indicator = null;
+    #errorDiv = null;
+    #navDiv = null;
+    #btnBack = null;
+    #btnNext = null;
+    #btnCancel = null;
+    #mo = null;
+
+    connectedCallback() {
+        if (!this.#indicator) this.#build();
+    }
+
+    disconnectedCallback() {
+        this.#mo?.disconnect();
+    }
+
+    attributeChangedCallback(name) {
+        if (!this.#navDiv) return;
+        if (name === 'can-advance') this.#updateNext();
+        else if (name === 'error') this.#updateError();
+        else this.#updateLabels();
+    }
+
+    #steps() {
+        return [...this.querySelectorAll(':scope > gc-wizard-step')];
+    }
+
+    #build() {
+        this.#indicator = document.createElement('nav');
+        this.#indicator.className = 'wizard-indicator';
+        this.#indicator.setAttribute('aria-label', 'Steps');
+
+        this.#errorDiv = document.createElement('div');
+        this.#errorDiv.className = 'wizard-error';
+        this.#errorDiv.setAttribute('role', 'alert');
+        this.#errorDiv.hidden = true;
+
+        this.#btnCancel = this.#mkBtn('wizard-btn-cancel', this.getAttribute('label-cancel') || 'Cancel');
+        this.#btnBack   = this.#mkBtn('wizard-btn-back',   this.getAttribute('label-back')   || 'Back');
+        this.#btnNext   = this.#mkBtn('wizard-btn-next',   this.getAttribute('label-next')   || 'Next');
+
+        this.#btnCancel.addEventListener('click', () =>
+            this.dispatchEvent(new CustomEvent('cancel', { bubbles: true }))
+        );
+        this.#btnBack.addEventListener('click', () => this.#go(this.#current - 1, 'back'));
+        this.#btnNext.addEventListener('click', () => this.#go(this.#current + 1, 'next'));
+
+        this.#navDiv = document.createElement('div');
+        this.#navDiv.className = 'wizard-nav';
+        this.#navDiv.append(this.#btnCancel, this.#btnBack, this.#btnNext);
+
+        this.prepend(this.#indicator, this.#errorDiv);
+        this.append(this.#navDiv);
+
+        this.#rebuildIndicator();
+        this.#show(0);
+        this.#updateError();
+
+        // Rebuild indicator when gc-wizard-step children are added/removed
+        this.#mo = new MutationObserver(() => this.#rebuildIndicator());
+        this.#mo.observe(this, { childList: true });
+    }
+
+    #mkBtn(className, label) {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = className;
+        btn.textContent = label;
+        return btn;
+    }
+
+    #rebuildIndicator() {
+        const steps = this.#steps();
+        this.#indicator.innerHTML = '';
+        steps.forEach((step, i) => {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'wizard-step-btn';
+            if (i === this.#current) btn.setAttribute('aria-current', 'step');
+            if (i < this.#highWaterMark && i !== this.#current) btn.classList.add('wizard-step--complete');
+            btn.textContent = step.getAttribute('title') || `Step ${i + 1}`;
+            btn.addEventListener('click', () => this.#go(i, 'goto'));
+            this.#indicator.append(btn);
+        });
+        this.#updateNavVisibility();
+        this.#updateNext();
+    }
+
+    #show(index) {
+        const steps = this.#steps();
+        this.#current = index;
+        steps.forEach((s, i) => { s.hidden = i !== index; });
+
+        this.#indicator.querySelectorAll('.wizard-step-btn').forEach((btn, i) => {
+            btn.toggleAttribute('aria-current', i === index);
+            if (i === index) btn.setAttribute('aria-current', 'step');
+            else btn.removeAttribute('aria-current');
+            btn.classList.toggle('wizard-step--complete', i < this.#highWaterMark && i !== index);
+        });
+
+        this.#updateNavVisibility();
+        this.#updateNext();
+
+        // Move focus to the active step's first heading
+        const active = steps[index];
+        if (active) {
+            const heading = active.querySelector('h1,h2,h3,h4,h5,h6');
+            if (heading) {
+                heading.setAttribute('tabindex', '-1');
+                heading.focus();
+            }
+        }
+    }
+
+    #go(to, reason) {
+        const steps = this.#steps();
+
+        // Last step + next → finish
+        if (reason === 'next' && this.#current === steps.length - 1) {
+            this.dispatchEvent(new CustomEvent('finish', { bubbles: true }));
+            return;
+        }
+
+        if (to < 0 || to >= steps.length) return;
+
+        const ev = new CustomEvent('navigate', {
+            bubbles: true,
+            cancelable: true,
+            detail: { from: this.#current, to, reason },
+        });
+        if (!this.dispatchEvent(ev)) return; // host vetoed
+
+        const from = this.#current;
+        this.#highWaterMark = Math.max(this.#highWaterMark, to);
+        this.#show(to);
+        this.dispatchEvent(new CustomEvent('navigated', {
+            bubbles: true,
+            detail: { from, to },
+        }));
+    }
+
+    #updateNext() {
+        if (!this.#btnNext) return;
+        const steps = this.#steps();
+        const isLast = this.#current === steps.length - 1;
+        const canAdvance = this.hasAttribute('can-advance');
+        this.#btnNext.textContent = isLast
+            ? (this.getAttribute('label-finish') || 'Finish')
+            : (this.getAttribute('label-next')   || 'Next');
+        this.#btnNext.disabled = !canAdvance;
+        this.#btnNext.setAttribute('aria-disabled', String(!canAdvance));
+    }
+
+    #updateError() {
+        if (!this.#errorDiv) return;
+        const msg = this.getAttribute('error');
+        this.#errorDiv.hidden = !msg;
+        this.#errorDiv.textContent = msg || '';
+    }
+
+    #updateLabels() {
+        if (!this.#btnBack) return;
+        this.#btnBack.textContent   = this.getAttribute('label-back')   || 'Back';
+        this.#btnCancel.textContent = this.getAttribute('label-cancel') || 'Cancel';
+        this.#updateNext();
+    }
+
+    #updateNavVisibility() {
+        if (!this.#btnBack) return;
+        this.#btnBack.hidden = this.#current === 0;
+    }
+}
+
+customElements.define('gc-wizard-shell', GcWizardShell);

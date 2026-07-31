@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- wizard.css is injected automatically by the proxy/dev server — no <link> needed for it. -->
+    <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+    <!--
+      Hidden until connect() resolves so the portal theme class is on <body>
+      before first paint — prevents a flash of the wrong token values.
+      main.js calls document.querySelector('main').hidden = false after context.get().
+    -->
+    <main hidden>
+        <gc-wizard-shell label-finish="Deploy">
+
+            <gc-wizard-step title="Configure">
+                <h2>Configure your app</h2>
+                <label>
+                    App name
+                    <input id="app-name" type="text" placeholder="my-app" autocomplete="off" />
+                </label>
+                <label>
+                    Template
+                    <select id="template-select">
+                        <option value="">Loading templates…</option>
+                    </select>
+                </label>
+            </gc-wizard-step>
+
+            <gc-wizard-step title="Review">
+                <h2>Review &amp; deploy</h2>
+                <dl>
+                    <dt>App name</dt>
+                    <dd id="review-name">—</dd>
+                    <dt>Template</dt>
+                    <dd id="review-template">—</dd>
+                </dl>
+                <p>Click <strong>Deploy</strong> to create the app. The portal will ask you to confirm.</p>
+            </gc-wizard-step>
+
+        </gc-wizard-shell>
+    </main>
+    <script type="module" src="./main.js"></script>
+</body>
+</html>

@@ -1,0 +1,11 @@
+{
+    "extends": "stylelint-config-standard",
+    "rules": {
+        "color-no-hex": true,
+        "color-named": "never",
+        "function-disallowed-list": ["rgb", "rgba", "hsl", "hsla", "color"],
+        "selector-class-pattern": ["^[a-z][a-z0-9-]*(__[a-z0-9-]+)?(--[a-z0-9-]+)?$", {
+            "message": "Expected class selector to be kebab-case or BEM"
+        }]
+    }
+}

@@ -1,0 +1,17 @@
+{
+    "name": "_example",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "build": "esbuild src/main.js --bundle --format=esm --outfile=dist/main.js && esbuild src/styles.css --bundle --outfile=dist/styles.css && cp src/index.html dist/index.html",
+        "dev": "pnpm run build && fastedge-wizard-dev dist",
+        "dev:watch": "esbuild src/main.js --bundle --format=esm --watch --outfile=dist/main.js"
+    },
+    "dependencies": {
+        "@gcoredev/fastedge-wizard-sdk": "latest",
+        "@gcore/wizard-step-kit": "file:../../packages/wizard-step-kit"
+    },
+    "devDependencies": {
+        "esbuild": "^0.28.1"
+    }
+}

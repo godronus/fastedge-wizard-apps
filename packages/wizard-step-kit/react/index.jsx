@@ -1,0 +1,167 @@
+/**
+ * Thin React 19 wrappers for gc-wizard-shell and gc-optional-panels.
+ * Encapsulates ref + addEventListener so consumers use idiomatic React props.
+ *
+ * Import:  import { WizardShell, WizardStep, OptionalPanels, WizardPanel }
+ *            from '@gcore/wizard-step-kit/react';
+ *
+ * The custom elements must be registered first:
+ *   import '@gcore/wizard-step-kit'; // side-effect import registers them
+ */
+import { useEffect, useRef, createElement as h } from 'react';
+
+/**
+ * @param {{ canAdvance?: boolean, error?: string,
+ *           labels?: { back?: string, next?: string, cancel?: string, finish?: string },
+ *           onNavigate?: (e: CustomEvent) => void,
+ *           onNavigated?: (e: CustomEvent) => void,
+ *           onFinish?: (e: CustomEvent) => void,
+ *           onCancel?: (e: CustomEvent) => void,
+ *           children?: React.ReactNode }} props
+ */
+export function WizardShell({ canAdvance = false, error, labels = {}, onNavigate, onNavigated, onFinish, onCancel, children }) {
+    const ref = useRef(null);
+
+    useEffect(() => {
+        const el = ref.current;
+        if (!el) return;
+        const nav  = e => onNavigate?.(e);
+        const navd = e => onNavigated?.(e);
+        const fin  = e => onFinish?.(e);
+        const can  = e => onCancel?.(e);
+        el.addEventListener('navigate',  nav);
+        el.addEventListener('navigated', navd);
+        el.addEventListener('finish',    fin);
+        el.addEventListener('cancel',    can);
+        return () => {
+            el.removeEventListener('navigate',  nav);
+            el.removeEventListener('navigated', navd);
+            el.removeEventListener('finish',    fin);
+            el.removeEventListener('cancel',    can);
+        };
+    }, [onNavigate, onNavigated, onFinish, onCancel]);
+
+    useEffect(() => {
+        const el = ref.current;
+        if (!el) return;
+        el.toggleAttribute('can-advance', canAdvance);
+    }, [canAdvance]);
+
+    useEffect(() => {
+        const el = ref.current;
+        if (!el) return;
+        if (error != null) el.setAttribute('error', error);
+        else el.removeAttribute('error');
+    }, [error]);
+
+    useEffect(() => {
+        const el = ref.current;
+        if (!el) return;
+        const { back, next, cancel, finish } = labels;
+        if (back   != null) el.setAttribute('label-back',   back);
+        if (next   != null) el.setAttribute('label-next',   next);
+        if (cancel != null) el.setAttribute('label-cancel', cancel);
+        if (finish != null) el.setAttribute('label-finish', finish);
+    }, [labels]);
+
+    return h('gc-wizard-shell', { ref }, children);
+}
+
+/**
+ * @param {{ title: string, children?: React.ReactNode }} props
+ */
+export function WizardStep({ title, children }) {
+    return h('gc-wizard-step', { title }, children);
+}
+
+/**
+ * @param {{ multiple?: boolean, onChange?: (selected: string[]) => void,
+ *           children?: React.ReactNode }} props
+ */
+export function OptionalPanels({ multiple = false, onChange, children }) {
+    const ref = useRef(null);
+
+    useEffect(() => {
+        const el = ref.current;
+        if (!el) return;
+        const handler = e => onChange?.(e.detail.selected);
+        el.addEventListener('selection-change', handler);
+        return () => el.removeEventListener('selection-change', handler);
+    }, [onChange]);
+
+    useEffect(() => {
+        const el = ref.current;
+        if (!el) return;
+        el.toggleAttribute('multiple', multiple);
+    }, [multiple]);
+
+    return h('gc-optional-panels', { ref }, children);
+}
+
+/**
+ * @param {{ value: string, label: string, children?: React.ReactNode }} props
+ */
+export function WizardPanel({ value, label, children }) {
+    return h('gc-wizard-panel', { value, label }, children);
+}
+
+/**
+ * @param {{ title: string, sub?: string, set?: boolean,
+ *           onClear?: (e: CustomEvent) => void,
+ *           labels?: { set?: string, unset?: string, clear?: string },
+ *           children?: React.ReactNode }} props
+ */
+export function ResourceRow({ title, sub, set = false, onClear, labels = {}, children }) {
+    const ref = useRef(null);
+
+    useEffect(() => {
+        const el = ref.current;
+        if (!el) return;
+        const clear = e => onClear?.(e);
+        el.addEventListener('clear', clear);
+        return () => el.removeEventListener('clear', clear);
+    }, [onClear]);
+
+    useEffect(() => {
+        const el = ref.current;
+        if (!el) return;
+        if (title != null) el.setAttribute('title', title); else el.removeAttribute('title');
+        if (sub   != null) el.setAttribute('sub', sub);      else el.removeAttribute('sub');
+    }, [title, sub]);
+
+    useEffect(() => {
+        const el = ref.current;
+        if (!el) return;
+        el.toggleAttribute('set', set);
+        el.toggleAttribute('clearable', !!onClear);
+    }, [set, onClear]);
+
+    useEffect(() => {
+        const el = ref.current;
+        if (!el) return;
+        const { set: ls, unset, clear } = labels;
+        if (ls    != null) el.setAttribute('label-set',   ls);
+        if (unset != null) el.setAttribute('label-unset', unset);
+        if (clear != null) el.setAttribute('label-clear', clear);
+    }, [labels]);
+
+    return h('gc-resource-row', { ref }, children);
+}
+
+/**
+ * Display-only deploy lifecycle panel. Drive `session.deployment.deploy()`
+ * yourself and pass the resulting state; the element renders it.
+ *
+ * @param {{ state: { status?: string, plan?: object, progress?: object[],
+ *           result?: object, error?: string } }} props
+ */
+export function DeployProgress({ state }) {
+    const ref = useRef(null);
+
+    useEffect(() => {
+        const el = ref.current;
+        if (el) el.state = state;
+    }, [state]);
+
+    return h('gc-deploy-progress', { ref });
+}

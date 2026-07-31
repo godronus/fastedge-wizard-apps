@@ -1,0 +1,47 @@
+# Builds every wizard and force-pushes the built output to the `gh-pages`
+# branch. This repo does NOT use the GitHub Pages feature (disabled org-wide) —
+# `gh-pages` is just a build-artifact branch that jsDelivr serves directly from
+# git (`cdn.jsdelivr.net/gh/<repo>@gh-pages/<wizard>/...`). Source lives on
+# `main`; built output is never committed there (see .gitignore).
+name: Publish wizards
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node Environment
+        uses: ./.github/setup-node
+
+      - name: Build all wizards
+        run: pnpm run build
+
+      - name: Publish release/ to gh-pages branch
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./release
+
+      # jsDelivr caches branch refs for up to 7 days. Nothing else caches (the
+      # WASM proxy runs every request, no edge cache), so this purge is the ONLY
+      # thing making a deploy visible promptly. Best-effort: a failed purge just
+      # means jsDelivr serves stale until its own TTL expires, not a broken deploy.
+      - name: Purge jsDelivr cache
+        run: |
+          repo="${{ github.repository }}"
+          cd release
+          find . -type f | sed 's|^\./||' | while read -r f; do
+            url="https://purge.jsdelivr.net/gh/${repo}@gh-pages/${f}"
+            echo "purge: $url"
+            curl -fsS "$url" > /dev/null || echo "  warn: purge failed for ${f}"
+          done

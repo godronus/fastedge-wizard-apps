@@ -1,0 +1,46 @@
+[
+    {
+        "id": 1,
+        "name": "Geo Redirect",
+        "short_descr": "Redirects requests to a region-specific origin based on the visitor's country",
+        "long_descr": "Set ORIGINS to a JSON object mapping ISO 3166-1 alpha-2 country codes to origin URLs. Requests from unlisted countries fall through to the default origin.",
+        "api_type": "wasi-http",
+        "binary_id": 11,
+        "params": [
+            {
+                "name": "ORIGINS",
+                "data_type": "string",
+                "descr": "JSON map of country code → origin URL",
+                "mandatory": true
+            },
+            {
+                "name": "DEFAULT",
+                "data_type": "string",
+                "descr": "Fallback origin URL for unlisted countries",
+                "mandatory": false
+            }
+        ]
+    },
+    {
+        "id": 3,
+        "name": "JWT Auth Filter",
+        "short_descr": "Validates a Bearer JWT in the Authorization header before forwarding the request",
+        "long_descr": "Verifies the JWT signature against a JWKS endpoint and checks expiry. Returns 401 on failure. Attach as a CDN proxy-wasm filter on routes you want to protect.",
+        "api_type": "proxy-wasm",
+        "binary_id": 13,
+        "params": [
+            {
+                "name": "JWKS_URI",
+                "data_type": "string",
+                "descr": "JWKS endpoint used to verify the token signature",
+                "mandatory": true
+            },
+            {
+                "name": "AUDIENCE",
+                "data_type": "string",
+                "descr": "Expected JWT audience claim (optional validation)",
+                "mandatory": false
+            }
+        ]
+    }
+]
