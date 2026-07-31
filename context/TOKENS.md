@@ -9,10 +9,7 @@ Fetch it to see current values — do not rely on any local copy, which will be 
 https://wizard-app-4732724.fastedge.cdn.gc.onl/styles/v1/wizard.css
 ```
 
-> **Future URL** (once fastedge-frontend deploys it as a portal asset):
-> `https://portal.preprod.world/external-statics/fast-edge/wizard.css`
-
-Source: `fastedge-frontend/scripts/wizard-tokens/_wizard-theme.scss`
+The token values are Gcore-maintained; this live URL is their source of truth for contributors. The catalog below is a vendored snapshot for quick reference.
 
 ---
 

@@ -14,8 +14,7 @@ import { StepTotpSettings } from './steps/StepTotpSettings.jsx';
 import { StepBranding } from './steps/StepBranding.jsx';
 import { StepReview } from './steps/StepReview.jsx';
 
-const hostOrigin =
-    new URLSearchParams(location.search).get('hostOrigin') || 'https://portal.gcore.com';
+const hostOrigin = new URLSearchParams(location.search).get('hostOrigin') || 'https://portal.gcore.com';
 
 // Escape a user-supplied path prefix for safe use inside a CDN rule regex —
 // otherwise metacharacters (e.g. the '.' in "/auth.v2") match more broadly than
@@ -39,20 +38,37 @@ function Wizard({ session, ctx, filterT, appT }) {
         // KV store
         store: null,
         // Secrets
-        sessionKey: null, handoff: null, enroll: null, gcore: null,
+        sessionKey: null,
+        handoff: null,
+        enroll: null,
+        gcore: null,
         // Profile A/B
-        profile: 'A', proofKey: null,
-        proofTtl: '90', proofCookie: 'mfa_proof',
+        profile: 'A',
+        proofKey: null,
+        proofTtl: '90',
+        proofCookie: 'mfa_proof',
         // TOTP authenticator settings
         totpMode: 'default',
-        totpIssuer: 'TOTP', totpDigits: '6', totpPeriod: '30', totpAlgo: 'SHA1', totpDrift: '1',
+        totpIssuer: 'TOTP',
+        totpDigits: '6',
+        totpPeriod: '30',
+        totpAlgo: 'SHA1',
+        totpDrift: '1',
         // Session & policy
         policyMode: 'default',
-        sessionTtl: '28800', maxAttempts: '5', ticketTtl: '90',
-        kvPrefix: 'totp:', selfEnroll: 'true', gcoreApiUrl: 'https://api.gcore.com',
+        sessionTtl: '28800',
+        maxAttempts: '5',
+        ticketTtl: '90',
+        kvPrefix: 'totp:',
+        selfEnroll: 'true',
+        gcoreApiUrl: 'https://api.gcore.com',
         // Branding
         brandMode: 'none',
-        brandName: '', brandLogo: '', brandFavicon: '', brandColor: '#0066cc', brandHover: '',
+        brandName: '',
+        brandLogo: '',
+        brandFavicon: '',
+        brandColor: '#0066cc',
+        brandHover: '',
     });
     const set = (patch) => setF((prev) => ({ ...prev, ...patch }));
 
@@ -64,16 +80,26 @@ function Wizard({ session, ctx, filterT, appT }) {
     //        6 TOTP settings · 7 Branding · 8 Review
     const canAdvance = useMemo(() => {
         switch (step) {
-            case 0: return !!f.name.trim();
-            case 1: return !!f.cdn;
-            case 2: return !!f.audience.trim() && f.authPrefix.startsWith('/') && f.authPrefix.length > 1;
-            case 3: return !!f.store;
-            case 4: return !!(f.sessionKey && f.handoff && f.enroll && f.gcore);
-            case 5: return f.profile === 'A' || (f.profile === 'B' && !!f.proofKey);
-            case 6: return true; // all optional
-            case 7: return true; // all optional
-            case 8: return deploy.state.status === 'idle' || deploy.state.status === 'error';
-            default: return false;
+            case 0:
+                return !!f.name.trim();
+            case 1:
+                return !!f.cdn;
+            case 2:
+                return !!f.audience.trim() && f.authPrefix.startsWith('/') && f.authPrefix.length > 1;
+            case 3:
+                return !!f.store;
+            case 4:
+                return !!(f.sessionKey && f.handoff && f.enroll && f.gcore);
+            case 5:
+                return f.profile === 'A' || (f.profile === 'B' && !!f.proofKey);
+            case 6:
+                return true; // all optional
+            case 7:
+                return true; // all optional
+            case 8:
+                return deploy.state.status === 'idle' || deploy.state.status === 'error';
+            default:
+                return false;
         }
     }, [step, f, deploy]);
 
@@ -85,35 +111,47 @@ function Wizard({ session, ctx, filterT, appT }) {
             ...(f.issuer ? { MFA_ISSUER: f.issuer } : {}),
         };
 
-        const totpEnv = f.totpMode === 'custom' ? {
-            TOTP_ISSUER: f.totpIssuer,
-            TOTP_DIGITS: f.totpDigits,
-            TOTP_PERIOD: f.totpPeriod,
-            TOTP_ALGORITHM: f.totpAlgo,
-            TOTP_DRIFT: f.totpDrift,
-        } : {};
+        const totpEnv =
+            f.totpMode === 'custom'
+                ? {
+                      TOTP_ISSUER: f.totpIssuer,
+                      TOTP_DIGITS: f.totpDigits,
+                      TOTP_PERIOD: f.totpPeriod,
+                      TOTP_ALGORITHM: f.totpAlgo,
+                      TOTP_DRIFT: f.totpDrift,
+                  }
+                : {};
 
-        const policyEnv = f.policyMode === 'custom' ? {
-            MFA_SESSION_TTL: f.sessionTtl,
-            MAX_ATTEMPTS: f.maxAttempts,
-            TICKET_TTL: f.ticketTtl,
-            KV_KEY_PREFIX: f.kvPrefix,
-            ALLOW_SELF_ENROLLMENT: f.selfEnroll,
-            GCORE_API_URL: f.gcoreApiUrl,
-        } : {};
+        const policyEnv =
+            f.policyMode === 'custom'
+                ? {
+                      MFA_SESSION_TTL: f.sessionTtl,
+                      MAX_ATTEMPTS: f.maxAttempts,
+                      TICKET_TTL: f.ticketTtl,
+                      KV_KEY_PREFIX: f.kvPrefix,
+                      ALLOW_SELF_ENROLLMENT: f.selfEnroll,
+                      GCORE_API_URL: f.gcoreApiUrl,
+                  }
+                : {};
 
-        const brandEnv = f.brandMode === 'custom' ? {
-            ...(f.brandName ? { TOTP_BRAND_NAME: f.brandName } : {}),
-            ...(f.brandLogo ? { TOTP_BRAND_LOGO_URL: f.brandLogo } : {}),
-            ...(f.brandFavicon ? { TOTP_BRAND_FAVICON_URL: f.brandFavicon } : {}),
-            ...(f.brandColor !== '#0066cc' ? { TOTP_BRAND_BUTTON_COLOR: f.brandColor } : {}),
-            ...(f.brandHover ? { TOTP_BRAND_BUTTON_HOVER_COLOR: f.brandHover } : {}),
-        } : {};
+        const brandEnv =
+            f.brandMode === 'custom'
+                ? {
+                      ...(f.brandName ? { TOTP_BRAND_NAME: f.brandName } : {}),
+                      ...(f.brandLogo ? { TOTP_BRAND_LOGO_URL: f.brandLogo } : {}),
+                      ...(f.brandFavicon ? { TOTP_BRAND_FAVICON_URL: f.brandFavicon } : {}),
+                      ...(f.brandColor !== '#0066cc' ? { TOTP_BRAND_BUTTON_COLOR: f.brandColor } : {}),
+                      ...(f.brandHover ? { TOTP_BRAND_BUTTON_HOVER_COLOR: f.brandHover } : {}),
+                  }
+                : {};
 
-        const profileBExtras = f.profile === 'B' ? {
-            ...(f.proofTtl !== '90' ? { PROOF_TTL: f.proofTtl } : {}),
-            ...(f.proofCookie !== 'mfa_proof' ? { MFA_PROOF_COOKIE: f.proofCookie } : {}),
-        } : {};
+        const profileBExtras =
+            f.profile === 'B'
+                ? {
+                      ...(f.proofTtl !== '90' ? { PROOF_TTL: f.proofTtl } : {}),
+                      ...(f.proofCookie !== 'mfa_proof' ? { MFA_PROOF_COOKIE: f.proofCookie } : {}),
+                  }
+                : {};
 
         const appEnv = {
             KV_STORE_ID: String(f.store.id),
@@ -154,15 +192,24 @@ function Wizard({ session, ctx, filterT, appT }) {
             ],
             sharedEnv,
             cdnResourceId: f.cdn.id,
-            newCdnOrigins: [
-                { ref: 'app-origin', name: `${f.name}-app-origin`, appRef: 'app' },
-            ],
+            newCdnOrigins: [{ ref: 'app-origin', name: `${f.name}-app-origin`, appRef: 'app' }],
             newCdnRules: [
                 // Route the login/challenge paths to the app origin.
-                { ref: 'app-route', name: `${f.name}-auth-route`, rule: `^${escapeRegex(f.authPrefix)}`, weight: 10, originGroupRef: 'app-origin' },
+                {
+                    ref: 'app-route',
+                    name: `${f.name}-auth-route`,
+                    rule: `^${escapeRegex(f.authPrefix)}`,
+                    weight: 10,
+                    originGroupRef: 'app-origin',
+                },
                 // Enforce the filter on everything else (it self-bypasses AUTH_PREFIX + /health).
                 {
-                    ref: 'filter-rule', name: `${f.name}-mfa-filter`, rule: '^/', weight: 1,
+                    // Match every path (the CDN API rejects a rule of only slashes, so not '^/').
+                    // The filter self-bypasses AUTH_PREFIX + /health internally.
+                    ref: 'filter-rule',
+                    name: `${f.name}-mfa-filter`,
+                    rule: '^/.*',
+                    weight: 1,
                     fastedgeFilter: { appRef: 'filter', hook: 'on_request_headers', interruptOnError: true },
                 },
             ],
@@ -192,15 +239,68 @@ function Wizard({ session, ctx, filterT, appT }) {
             onFinish={handleFinish}
             onCancel={() => session.dispose()}
         >
-            <WizardStep title="Overview"><StepOverview f={f} set={set} filterT={filterT} appT={appT} /></WizardStep>
-            <WizardStep title="CDN resource"><StepCdn session={session} f={f} set={set} /></WizardStep>
-            <WizardStep title="Routing & tokens"><StepRouting f={f} set={set} /></WizardStep>
-            <WizardStep title="KV store"><StepStore session={session} f={f} set={set} /></WizardStep>
-            <WizardStep title="Secrets"><StepSecrets session={session} f={f} set={set} /></WizardStep>
-            <WizardStep title="Profile"><StepProfile session={session} f={f} set={set} /></WizardStep>
-            <WizardStep title="TOTP settings"><StepTotpSettings f={f} set={set} /></WizardStep>
-            <WizardStep title="Branding"><StepBranding f={f} set={set} /></WizardStep>
-            <WizardStep title="Review"><StepReview f={f} deploy={deploy} filterT={filterT} appT={appT} /></WizardStep>
+            <WizardStep title="Overview">
+                <StepOverview
+                    f={f}
+                    set={set}
+                    filterT={filterT}
+                    appT={appT}
+                />
+            </WizardStep>
+            <WizardStep title="CDN resource">
+                <StepCdn
+                    session={session}
+                    f={f}
+                    set={set}
+                />
+            </WizardStep>
+            <WizardStep title="Routing & tokens">
+                <StepRouting
+                    f={f}
+                    set={set}
+                />
+            </WizardStep>
+            <WizardStep title="KV store">
+                <StepStore
+                    session={session}
+                    f={f}
+                    set={set}
+                />
+            </WizardStep>
+            <WizardStep title="Secrets">
+                <StepSecrets
+                    session={session}
+                    f={f}
+                    set={set}
+                />
+            </WizardStep>
+            <WizardStep title="Profile">
+                <StepProfile
+                    session={session}
+                    f={f}
+                    set={set}
+                />
+            </WizardStep>
+            <WizardStep title="TOTP settings">
+                <StepTotpSettings
+                    f={f}
+                    set={set}
+                />
+            </WizardStep>
+            <WizardStep title="Branding">
+                <StepBranding
+                    f={f}
+                    set={set}
+                />
+            </WizardStep>
+            <WizardStep title="Review">
+                <StepReview
+                    f={f}
+                    deploy={deploy}
+                    filterT={filterT}
+                    appT={appT}
+                />
+            </WizardStep>
         </WizardShell>
     );
 }
@@ -218,7 +318,10 @@ function App() {
                 const ctx = await session.context.get();
 
                 if (ctx.launchTemplateId === null) {
-                    setState({ status: 'error', error: 'Opened in re-entry mode — launch from the TOTP template to deploy.' });
+                    setState({
+                        status: 'error',
+                        error: 'Opened in re-entry mode — launch from the TOTP template to deploy.',
+                    });
                     return;
                 }
                 // Identify both templates by api_type — never by hard-coded id.
@@ -228,7 +331,10 @@ function App() {
                 const appT = details.find((t) => t.api_type === 'wasi-http');
 
                 if (!filterT || !appT) {
-                    setState({ status: 'error', error: 'Expected one proxy-wasm filter and one wasi-http app. Check companion templates.' });
+                    setState({
+                        status: 'error',
+                        error: 'Expected one proxy-wasm filter and one wasi-http app. Check companion templates.',
+                    });
                     return;
                 }
                 setState({ status: 'ready', session, ctx, filterT, appT });
@@ -245,7 +351,14 @@ function App() {
 
     if (state.status === 'connecting') return <p>Connecting…</p>;
     if (state.status === 'error') return <p className="wizard-error">{state.error}</p>;
-    return <Wizard session={state.session} ctx={state.ctx} filterT={state.filterT} appT={state.appT} />;
+    return (
+        <Wizard
+            session={state.session}
+            ctx={state.ctx}
+            filterT={state.filterT}
+            appT={state.appT}
+        />
+    );
 }
 
 createRoot(document.getElementById('root')).render(<App />);

@@ -178,33 +178,36 @@ async function demo() {
         }
     }
 
-    // ── 5. secrets.generateRandom() — random HMAC session key ────────────────
-    // generateRandom creates a random value of `bytes` bytes and shows it in a portal
-    // "copy now" modal before storing it as a secret. Use for HMAC keys, webhook
-    // secrets, and other symmetric random values the wizard defines.
+    // ── 5. secrets.pickOrCreate({ bytes }) — random HMAC session key ──────────
+    // Passing `bytes` arms the picker's create-inline Generate button with a host-made
+    // random value of that strength — this replaces the former `secrets.generateRandom`.
+    // The picker also lets the user reuse a secret a prior run created (rename-safe,
+    // picked from the live list). Use for HMAC keys, webhook secrets, and other
+    // symmetric random values the wizard defines.
     //
-    // Contrast with generateKeypair: generateRandom is symmetric (one value, one secret);
+    // Contrast with generateKeypair: this is symmetric (one value, one secret);
     // generateKeypair is asymmetric (private key stored as secret + public key JWK
     // returned to the wizard).
     //
-    // The returned ref (id + name) is used in secretRefs or newFastedgeSecrets.
+    // The returned ref (id + name + origin) is used in secretRefs or newFastedgeSecrets.
     //
-    // Consent point: portal modal. WizardError('user_cancelled') if dismissed.
-    section('5. secrets.generateRandom() — random HMAC session key');
+    // Consent point: portal picker. WizardError('user_cancelled') if dismissed.
+    section('5. secrets.pickOrCreate({ bytes }) — random HMAC session key');
 
     let sessionKeyRef = null;
     try {
-        sessionKeyRef = await session.fastedge.secrets.generateRandom({
+        const rs = await session.fastedge.secrets.pickOrCreate({
             name: 'example-session-key',
             comment: 'HMAC session key — example-intents demo',
             bytes: 32,
         });
-        ok(`secret id=${sessionKeyRef.id}, name=${sessionKeyRef.name}`);
+        sessionKeyRef = rs && rs.length ? rs[0] : null;
+        if (sessionKeyRef) ok(`secret id=${sessionKeyRef.id}, name=${sessionKeyRef.name}, origin=${sessionKeyRef.origin}`);
     } catch (err) {
         if (err instanceof WizardError && err.code === 'user_cancelled') {
-            warn('Session key generation cancelled — continuing without it');
+            warn('Session key selection cancelled — continuing without it');
         } else {
-            fail('secrets.generateRandom failed', err);
+            fail('secrets.pickOrCreate failed', err);
             return;
         }
     }
@@ -257,12 +260,10 @@ async function demo() {
     //   The ref is never sent to the Gcore API — it is resolved to the real app id
     //   by the host during apply, after the app is created.
     //
-    //   newFastedgeSecrets — each is created atomically during apply. The host opens
-    //   a portal "Create Secret" modal for each one (the user sets the value). Use
-    //   for user-supplied secrets. Created secrets are NOT usable in secretRefs within
-    //   the same plan — use secrets.generateRandom/generateKeypair for those.
-    //
-    //   newFastedgeStores — created atomically during apply. No user interaction.
+    //   Secrets and stores are NOT created by the plan. Create them eagerly during the
+    //   wizard steps (secrets.pickOrCreate / stores.pickOrCreate / secrets.generateKeypair)
+    //   and reference the returned { id } in an app's secretRefs or env below — this is
+    //   what the shipped edge-totp wizard does. See the KV store picked just below.
     //
     //   newCdnOrigins[*].appRef — must match a fastedgeApps[*].ref. Resolved to the
     //   created app id during apply.
@@ -277,6 +278,23 @@ async function demo() {
     // No consent dialog — planning is non-destructive.
     section('7. deployment.plan() — build the deployment plan');
 
+    // Eager KV store — created/picked BEFORE the plan so its real id can be injected into
+    // an app's env (the plan cannot create stores/secrets or substitute their ids). This is
+    // the pattern the shipped edge-totp wizard uses.
+    let kvStore = null;
+    try {
+        const stores = await session.fastedge.stores.pickOrCreate();
+        kvStore = stores && stores.length ? stores[0] : null;
+        if (kvStore) ok(`KV store id=${kvStore.id}, name=${kvStore.name}, origin=${kvStore.origin}`);
+    } catch (err) {
+        if (err instanceof WizardError && err.code === 'user_cancelled') {
+            warn('KV store selection cancelled — continuing without it');
+        } else {
+            fail('stores.pickOrCreate failed', err);
+            return;
+        }
+    }
+
     const planParams = {
         fastedgeApps: [
             {
@@ -288,6 +306,8 @@ async function demo() {
                     // publicKey from generateKeypair bound as a plain env var on the http app.
                     // The proxy-wasm filter reads this to verify JWTs.
                     ...(signingKey ? { PUBLIC_JWK: signingKey.publicKey } : {}),
+                    // Eagerly-picked store id wired in by id — the recommended pattern.
+                    ...(kvStore ? { KV_STORE_ID: String(kvStore.id) } : {}),
                 },
                 ...(signingKey ? { secretRefs: { SIGNING_KEY: signingKey.id } } : {}),
             },
@@ -304,30 +324,6 @@ async function demo() {
         sharedEnv: {
             ACCOUNT_ID: String(ctx.wizardAppId ?? 'demo'),
         },
-        // newFastedgeSecrets are created atomically during apply — one portal
-        // "Create Secret" modal per entry. The user sets the secret value.
-        // These are for user-supplied secrets (API keys, tokens the user already
-        // has). Prefer secrets.generateRandom for random values — it shows a generated
-        // value in the modal rather than an empty field.
-        newFastedgeSecrets: [
-            { ref: 'user-api-key', name: 'example-user-api-key' },
-        ],
-        // newFastedgeStores are created atomically during apply with no modal.
-        // name is optional (ref is used as a fallback label).
-        //
-        // ⚠️  LIMITATION: there is no storeRef substitution in env. A store created
-        // here gets an id that doesn't exist yet at plan time, so you cannot wire
-        // its id or name into an app's env from the plan. newFastedgeStores is only
-        // useful when NO app references the store by id in its env params.
-        //
-        // If an app has an env param like KV_STORE_ID (typed "string" or "store"):
-        //   1. Call stores.pickOrCreate() BEFORE deployment.plan()
-        //   2. Inject the returned { id, name } directly into the app's env here
-        //   3. Do NOT use newFastedgeStores for that store
-        // The shipped edge-totp wizard demonstrates this pattern.
-        newFastedgeStores: [
-            { ref: 'kv', name: 'example-kv-store', comment: 'KV store — example-intents demo' },
-        ],
     };
 
     // Wire CDN only if the user picked a resource
@@ -439,9 +435,6 @@ async function demo() {
         for (const app of applied.createdFastedgeApps) {
             ok(`  app: ref=${app.ref}, id=${app.id}`);
             if (app.url) info(`       url=${app.url}`);
-        }
-        for (const store of (applied.createdFastedgeStores ?? [])) {
-            ok(`  KV store: ref=${store.ref}, id=${store.id}, name=${store.name}`);
         }
         for (const origin of (applied.createdCdnOrigins ?? [])) {
             ok(`  CDN origin: ref=${origin.ref}, id=${origin.id}`);

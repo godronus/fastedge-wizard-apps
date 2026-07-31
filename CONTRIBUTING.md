@@ -1,14 +1,16 @@
 # Contributing a Wizard
 
-Wizards are plain HTML + JavaScript apps that run inside the Gcore portal via an iframe bridge. This guide covers building one and getting it merged.
+Wizards are plain HTML + JavaScript apps that run inside the Gcore portal via an iframe bridge. This guide is the **end-to-end process for building one and getting it merged**.
+
+> **New here?** Read [`README.md`](README.md) first — it orients you on what a wizard is, the repo layout, and gets one running locally in about a minute. Come back here to build and submit for real.
 
 ---
 
 ## How it works
 
-Your wizard lives at `wizards/<name>/`, builds to `dist/`, and gets published to the `gh-pages` branch by CI. jsDelivr serves the built output. The FastEdge portal proxies it through a hardened WASM app that enforces CSP and re-serves it under a fixed origin.
+Your wizard lives at `wizards/<name>/` (source only); CI builds and publishes it — see [`README.md`](README.md#repo-layout) for the build → `gh-pages` → jsDelivr → proxy topology.
 
-After a wizard merges, the Gcore team creates a FastEdge template that points to it via `WIZARD_SOURCE_CONFIG`. That's the step that makes it available in the portal — merging alone does not.
+The part that matters for submission: **merging does not make a wizard live.** After a wizard merges, the Gcore team creates a FastEdge template that points to it via `WIZARD_SOURCE_CONFIG` — that publish step is what surfaces it in the portal.
 
 ---
 
@@ -76,8 +78,6 @@ Edit `package.json` — set `"name"` and the SDK dependency (templates and examp
 }
 ```
 
-> **Gcore team / fastedge-frontend monorepo**: use `"file:../../../fastedge-wizard-sdk"` instead of the npm dep — the SDK lives at `fastedge-wizard-sdk/` inside `fastedge-frontend/`. Three `../` from `wizards/<name>/` reaches it. The npm dep is the default for all contributors; the `file:` path is a local-dev override only.
-
 Install and run the mock host:
 
 ```bash
@@ -143,7 +143,7 @@ everywhere.
 1. Call `session.fastedge.stores.pickOrCreate()` (user selects an existing store or creates one inline) **before** `deployment.plan()`
 2. Inject the returned `{ id, name }` directly into the app's `env` in the plan
 
-Do **not** use `newFastedgeStores` for this. Stores created inside the plan are not available at plan time, so their id cannot be wired into env — there is no store-ref substitution equivalent to `secretRefs`. `newFastedgeStores` is only safe when no app references the store by id. See the comment in `wizards/_example-intents/src/main.js` for details.
+The deploy plan does **not** create secrets or stores — always create them eagerly (as above) and reference them by id in `env` / `secretRefs`. `edge-totp` and `wizards/_example-intents/src/main.js` demonstrate the pattern.
 
 The Gcore template `edge-totp` is the canonical worked example — two apps
 (`otp-app` wasi-http + `otp-filter` proxy-wasm) where `MFA_SESSION_KEY`,
@@ -161,8 +161,8 @@ behind it (`secrets.create`/`pick`/`list`, `stores.create`/`pick`/`list`) no lon
 
 | The value is… | Call | Returns |
 | --- | --- | --- |
-| Brought by the user — reuse an existing secret/store, or paste a real external value (API token) | `secrets.pickOrCreate()` / `stores.pickOrCreate()` | `{ id, name }[]` (take `[0]` for single-select) |
-| A random secret the wizard defines, at a chosen strength (HMAC/signing keys) | `secrets.generateRandom({ name, comment?, bytes })` | `{ id, name }` |
+| Brought by the user — reuse an existing secret/store, or paste a real external value (API token) | `secrets.pickOrCreate()` / `stores.pickOrCreate()` | `{ id, name, origin }[]` (take `[0]` for single-select) |
+| A random secret the wizard defines, at a chosen strength (HMAC/signing keys) | `secrets.pickOrCreate({ name?, comment?, bytes })` — `bytes` arms the create-inline Generate button | `{ id, name, origin }[]` (take `[0]`) |
 | An asymmetric keypair whose public half the wizard needs (ES256) | `secrets.generateKeypair({ name, comment?, algorithm })` | `{ id, name, publicKey }` |
 
 **Optional / conditional resources.** `pickOrCreate` removes the *pick-vs-create* branch, but
@@ -248,7 +248,7 @@ The full capability surface — everything you can do through the bridge — is 
 
 For a runnable worked example of every intent in sequence, see `wizards/_example-intents/src/main.js` — it exercises all v1 write intents with inline docs explaining consent points, ref→id resolution, and rollback semantics.
 
-> **Note:** `fastedge-frontend/docs/wizards/` contains maintainer-internal design docs. External contributors do not need it.
+> **Note:** additional architecture/design docs are maintained internally by Gcore; you don't need them — this repo's `context/` covers everything required to build a wizard.
 
 ---
 

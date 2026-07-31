@@ -4,15 +4,16 @@ import { ResourceRow } from '@gcore/wizard-step-kit/react';
 
 export function StepSecrets({ session, f, set }) {
     const [busy, setBusy] = useState('');
-    // Wizard-defined HS256 keys → generateRandom: the host generates a fresh 32-byte value.
-    // (These are keys the wizard defines, not secrets the user brings — so no picker.)
+    // Wizard-defined HS256 keys → pickOrCreate({ bytes }): the host picker lets the user generate a
+    // fresh 32-byte value OR reuse a secret a prior run created (rename-safe — picked from the live
+    // list), so a re-run after a failed deploy no longer collides on the deterministic name.
     const generate = (key, name, comment) => async () => {
         setBusy(key);
         try {
-            const r = await optional(() => session.fastedge.secrets.generateRandom({ name, comment, bytes: 32 }));
-            if (r) set({ [key]: r });
+            const rs = await optional(() => session.fastedge.secrets.pickOrCreate({ name, comment, bytes: 32 }));
+            if (rs && rs.length) set({ [key]: rs[0] });
         } catch (err) {
-            console.error(`secret generate (${key}) failed:`, err);
+            console.error(`secret pick/generate (${key}) failed:`, err);
         } finally {
             setBusy('');
         }
