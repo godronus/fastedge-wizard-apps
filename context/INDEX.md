@@ -14,18 +14,16 @@ wizard's behalf. The wizard never holds a credential.
 frame them directly — the wizard proxy WASM app fetches them server-side and
 re-serves them under a single origin with enforced headers.
 
-Full system design: `fastedge-frontend/docs/wizards/README.md` (read that first
-for architecture, protocol, trust model, and intent catalog).
+Everything a wizard author needs is in this repo's `context/` docs plus the public SDK. The portal host, the proxy app, and the internal design docs are Gcore-maintained and not part of this repo.
 
 ### Other system components
 
 | Component | Location |
 |-----------|----------|
-| Portal host (Angular, bridge, intent router) | `fastedge-frontend` |
-| Guest SDK (`@gcoredev/fastedge-wizard-sdk`) | `G-Core/fastedge-wizard-sdk` |
-| Proxy WASM app | `FastEdgeApps-coordinator/.../wizardApp` |
-| Design docs (architecture, protocol, trust model) | `fastedge-frontend/docs/wizards/` |
-| SDK migration + consumption guide | `fastedge-wizard-sdk/context/INDEX.md` |
+| Portal host (Angular, bridge, intent router) | Gcore portal (internal) |
+| Guest SDK (`@gcoredev/fastedge-wizard-sdk`) | [`G-Core/fastedge-wizard-sdk`](https://github.com/G-Core/fastedge-wizard-sdk) (public) |
+| Proxy WASM app (fetches + re-serves wizards under one origin) | Gcore-internal |
+| SDK API / migration / consumption guide | `context/` in the public SDK repo |
 
 ---
 
@@ -65,7 +63,6 @@ Set on the FastEdge template that launches this wizard (first path segment is th
 git ref, the rest is the wizard subdir):
 
 ```
-WIZARD_SPEC=1
 WIZARD_SOURCE_CONFIG={"repo":"G-Core/FastEdge-Wizard-apps","path":"gh-pages/<wizard-dir>","cdn":"jsdelivr"}
 ```
 
@@ -94,7 +91,7 @@ types are included.
 | `v0.0.8` | Mock-host + theme/locale bridge shipped (see `decisions.md` §6). Note: the SDK `package.json` `version` field currently reads `0.0.1` and lags the tags — reconcile before the first external tag pin. |
 | `main` | Development — do not pin committed wizards to this |
 
-> In-tree wizards (`edge-totp`, `_example-intents`) use `"file:"` paths to the local `fastedge-wizard-sdk/`, not a tag. External contributors pin a `github:…#<tag>`.
+> Wizards depend on the npm package (`"@gcoredev/fastedge-wizard-sdk": "latest"` for starters/examples; a production wizard can pin a published version). A `github:…#<tag>` pin also works.
 
 _Add rows when tags are published._
 
@@ -111,8 +108,7 @@ session.fastedge.apps.get({ id })
 session.fastedge.apps.create(params)             // consent required
 session.fastedge.apps.update(params)             // consent required
 session.fastedge.apps.link(params)               // consent required
-session.fastedge.secrets.pickOrCreate()          // portal picker: user selects existing OR creates inline → { id, name }[]
-session.fastedge.secrets.generateRandom(params)  // portal modal, pre-filled with a host-generated random value (params.bytes)
+session.fastedge.secrets.pickOrCreate(params?)   // portal picker: select existing OR create inline → { id, name, origin }[]. { bytes } arms the create Generate button
 session.fastedge.secrets.generateKeypair(params) // portal modal; returns { id, name, publicKey } (ES256 JWK)
 session.fastedge.stores.pickOrCreate()           // portal picker: user selects existing OR creates inline → { id, name }[]
 session.cdn.resources.list()
@@ -182,10 +178,7 @@ the common cases and survive reseller theming unchanged.
 | Info | `--gc-wizard-info` | `--gc-alert-stroke-blue-color` |
 | Border radius | `--gc-wizard-radius` | `--gc-card-view-border-radius` |
 
-The subset is generated via `scripts/wizard-tokens/_wizard-subset.scss` and flows through
-`build:wizard-tokens` → `publish:wizard-tokens` / `gen:wizard-tokens`. See
-`fastedge-frontend/scripts/wizard-tokens/entry.scss` and
-`fastedge-frontend/docs/wizards/tasks/token-reference-and-lint.md`.
+The token **values** are Gcore-maintained and vendored into this repo — see [`TOKENS.md`](TOKENS.md) for the full catalog (name → value → light/dark). The `check-tokens` lint gate (`scripts/check-tokens.mjs`, wired into `lint:css`) rejects any `var(--gc-*)` that isn't a real token.
 
 ---
 
@@ -212,12 +205,12 @@ Slash commands (`.claude/skills/`) — invoke from the `fastedge-wizard-apps/` w
 
 ---
 
-## Orange's Repo
+## Partner repos
 
-Orange (`Orange/gcore-wizards`) has their own allow-list entry on the proxy.
-Each wizard is a subdirectory with `src/` and the same `@gcoredev/fastedge-wizard-sdk`
-dep. They manage their own SDK version pins, builds, and publish/serve strategy
-independently — their `WIZARD_SOURCE_CONFIG` ref/cdn need not match ours.
+The proxy can allow-list additional source repos (e.g. a partner's own wizard repo).
+Each is a repo of wizard subdirectories using the same `@gcoredev/fastedge-wizard-sdk`
+dep; the partner manages their own SDK pins, builds, and publish/serve strategy
+independently — their `WIZARD_SOURCE_CONFIG` ref/cdn need not match this repo's.
 
 ---
 
@@ -228,6 +221,6 @@ independently — their `WIZARD_SOURCE_CONFIG` ref/cdn need not match ours.
 | Intent reference (all v1 write intents, heavily commented) | `wizards/_example-intents/` | Active (dev-only, not published) | See `src/main.js` — copy patterns from here |
 | edge-totp (two-app: `proxy-wasm` filter + `wasi-http` app, CDN wiring) | `wizards/edge-totp/` | Active — reference React / multi-app wizard | Built in the "real wizard" experiment; canonical example for CDN rules/origins, shared secrets, KV store binding, and Profile A/B |
 
-> Starters (not wizards): `wizards/_template` (vanilla), `wizards/_template-react` (React). `write-intents/` has been removed — superseded by `_example-intents/`.
+> Starters (not wizards): `wizards/_template` (vanilla), `wizards/_template-react` (React).
 
 _Add rows here when new wizards are added._

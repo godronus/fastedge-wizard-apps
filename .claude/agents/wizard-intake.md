@@ -130,7 +130,7 @@ For each secret, record **how the wizard obtains it** (one SDK call per secret �
 - **User brings it** (reuse existing, or paste a real external token like a Gcore API token) →
   `secrets.pickOrCreate()`.
 - **Wizard-defined random key** (HMAC/signing key at a chosen `bytes` strength) →
-  `secrets.generateRandom({ name, bytes })`.
+  `secrets.pickOrCreate({ name, bytes })` (`bytes` arms the create-inline Generate button).
 - **Asymmetric keypair** whose public half the wizard needs (ES256) →
   `secrets.generateKeypair({ name, algorithm })`.
 

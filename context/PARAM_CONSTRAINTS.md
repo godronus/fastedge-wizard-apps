@@ -139,8 +139,9 @@ function isRequiredForPair(appParam, filterDetail) {
 }
 ```
 
-Template identification (`launchTemplateId` / `companionTemplateIds`) is covered
-in `fastedge-frontend/docs/wizards/decisions.md §12`.
+Template identification uses `launchTemplateId` (the template that launched this wizard) and
+`companionTemplateIds` (its declared companion templates), both from `session.context.get()` —
+see the SDK types for their shapes.
 
 ## Shared-secret recipe
 
@@ -148,9 +149,9 @@ When params that must match across apps have `data_type: "secret"`, create the
 secret **once** and bind the same secret ID to both apps:
 
 ```js
-// 1. Generate once (opens a portal modal pre-filled with a host-generated random value).
-//    For a secret the user brings instead, use secrets.pickOrCreate().
-const mfaSessionKey = await session.fastedge.secrets.generateRandom({
+// 1. Pick or create once. Passing { bytes } arms the picker's create-inline Generate button
+//    with a host-generated random value; omit bytes for a secret the user brings.
+const [mfaSessionKey] = await session.fastedge.secrets.pickOrCreate({
     name: 'totp-mfa-session-key',
     bytes: 32,  // 32-byte random key, HS256-safe
 });

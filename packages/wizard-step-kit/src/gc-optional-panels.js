@@ -59,13 +59,10 @@ class GcOptionalPanels extends HTMLElement {
             panel.setAttribute('tabindex', '0');
             panel.classList.add('wizard-panel');
 
-            // Wrap existing children in a collapsible content div
-            const content = document.createElement('div');
-            content.className = 'wizard-panel-content';
-            content.hidden = true;
-            [...panel.children].forEach(c => content.appendChild(c));
-
-            // Header row (label + indicator)
+            // Header row (label + indicator). Appended LAST and never reparents the
+            // panel's existing children — React (or any framework) owns those nodes,
+            // and moving them into a wrapper corrupts its reconciliation. CSS orders
+            // the header first and collapses the body when aria-selected is false.
             const header = document.createElement('div');
             header.className = 'wizard-panel-header';
             const indicator = document.createElement('span');
@@ -75,16 +72,15 @@ class GcOptionalPanels extends HTMLElement {
             labelEl.className = 'wizard-panel-label';
             labelEl.textContent = panel.getAttribute('label') || val;
             header.append(indicator, labelEl);
+            panel.append(header);
 
-            panel.append(header, content);
-
-            const toggle = (e) => {
-                if (e.target.closest('.wizard-panel-content')) return;
-                this.#toggle(val);
-            };
-            panel.addEventListener('click', toggle);
+            panel.addEventListener('click', e => {
+                // Only the header toggles; clicks in the body pass through to controls.
+                if (e.target.closest('.wizard-panel-header')) this.#toggle(val);
+            });
             panel.addEventListener('keydown', e => {
-                if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); }
+                if (e.target !== panel) return; // ignore keys bubbling from body controls
+                if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); this.#toggle(val); }
             });
         });
     }
@@ -109,8 +105,6 @@ class GcOptionalPanels extends HTMLElement {
         this.#panels().forEach(panel => {
             const selected = this.#selected.has(panel.getAttribute('value') ?? '');
             panel.setAttribute('aria-selected', String(selected));
-            const content = panel.querySelector('.wizard-panel-content');
-            if (content) content.hidden = !selected;
         });
     }
 }
