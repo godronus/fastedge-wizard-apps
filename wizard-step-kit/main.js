@@ -336,7 +336,6 @@ var GcDeployProgress = class extends HTMLElement {
       (result.createdFastedgeApps || []).forEach(
         (a) => ul.append(mk("li", null, `${a.ref}: app #${a.id}${a.url ? ` \u2192 ${a.url}` : ""}`))
       );
-      appendCreated(ul, result.createdFastedgeStores, "store");
       appendCreated(ul, result.createdCdnOrigins, "CDN origin");
       appendCreated(ul, result.createdCdnRules, "CDN rule");
       if (ul.children.length) box.append(ul);

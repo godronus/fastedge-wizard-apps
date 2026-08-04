@@ -133,6 +133,7 @@ gc-optional-panels {
 .wizard-panel[aria-selected=true] {
   border-color: var(--gc-wizard-brand);
   background: var(--gc-wizard-surface);
+  padding-bottom: 1rem;
 }
 .wizard-panel-header {
   order: -1;
@@ -160,9 +161,6 @@ gc-optional-panels {
 }
 .wizard-panel:not([aria-selected=true]) > :not(.wizard-panel-header) {
   display: none;
-}
-.wizard-panel[aria-selected=true] {
-  padding-bottom: 1rem;
 }
 .wizard-panel[aria-selected=true] > :not(.wizard-panel-header) {
   padding-left: 1rem;
