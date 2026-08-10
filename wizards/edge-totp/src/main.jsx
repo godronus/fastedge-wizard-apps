@@ -237,7 +237,6 @@ function Wizard({ session, ctx, filterT, appT }) {
             labels={{ finish: 'Deploy' }}
             onNavigated={(e) => setStep(e.detail.to)}
             onFinish={handleFinish}
-            onCancel={() => session.dispose()}
         >
             <WizardStep title="Overview">
                 <StepOverview
@@ -260,7 +259,7 @@ function Wizard({ session, ctx, filterT, appT }) {
                     set={set}
                 />
             </WizardStep>
-            <WizardStep title="KV store">
+            <WizardStep title="Edge Storage">
                 <StepStore
                     session={session}
                     f={f}

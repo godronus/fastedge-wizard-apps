@@ -12,8 +12,8 @@ importers:
         specifier: file:../../packages/wizard-step-kit
         version: file:../../packages/wizard-step-kit(react@19.2.8)
       '@gcoredev/fastedge-wizard-sdk':
-        specifier: 0.0.2
-        version: 0.0.2
+        specifier: 0.0.3
+        version: 0.0.3
       react:
         specifier: ^19.0.0
         version: 19.2.8
@@ -188,8 +188,8 @@ packages:
     peerDependencies:
       react: '>=19'
 
-  '@gcoredev/fastedge-wizard-sdk@0.0.2':
-    resolution: {integrity: sha512-0B3PcOwTlBF2sqyuZxQAZhUF7EUdKXO0B1X8uI6gb2tFhmBfZgXAAELrEVf92gT0hs2hP0sRc5eroPSFgJQY7w==}
+  '@gcoredev/fastedge-wizard-sdk@0.0.3':
+    resolution: {integrity: sha512-joiU5SzTwXGne+2g5/tnK0WNqKfVrhJeiz7TOFqM2aPqIIdkCuIfPfuWg3iUEpYbhMXmDj805MQ2KhiT8foG7A==}
     engines: {node: '>=22'}
     hasBin: true
 
@@ -297,7 +297,7 @@ snapshots:
     dependencies:
       react: 19.2.8
 
-  '@gcoredev/fastedge-wizard-sdk@0.0.2':
+  '@gcoredev/fastedge-wizard-sdk@0.0.3':
     dependencies:
       zod: 3.25.76
 

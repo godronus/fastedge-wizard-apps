@@ -48,16 +48,11 @@ function Wizard({ ctx }) {
         // await session.deployment.apply({ planId });
     }
 
-    function handleCancel() {
-        // Wizard was cancelled — nothing to clean up in this template.
-    }
-
     return (
         <WizardShell
             canAdvance={canAdvance}
             labels={{ finish: 'Deploy' }}
             onFinish={handleFinish}
-            onCancel={handleCancel}
         >
             <WizardStep title="Configure">
                 <StepConfigure ctx={ctx} />

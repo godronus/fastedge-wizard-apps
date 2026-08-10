@@ -107,12 +107,12 @@ the auth app's param definition says otherwise.
 ### App-only params (template 734 only)
 
 `KV_STORE_ID` and `KV_STORE_NAME` (both `mandatory: true`, `data_type: "string"`)
-identify the Gcore KV store that holds TOTP seeds. These appear only on the auth
-app — not on the filter. The wizard creates or picks a KV store and passes both
+identify the Gcore Edge Storage instance that holds TOTP seeds. These appear only on the auth
+app — not on the filter. The wizard creates or picks an Edge Storage instance and passes both
 the store ID and name.
 
 Secrets exclusive to the auth app: `ENROLL_API_KEY` (gates the enroll endpoint),
-`GCORE_API_TOKEN` (KV write access), `HANDOFF_KEY` (verifies origin handoff tickets).
+`GCORE_API_TOKEN` (Edge Storage write access), `HANDOFF_KEY` (verifies origin handoff tickets).
 
 Profile B branding/proof params (`MFA_PROOF_SIGNING_KEY`, `MFA_PROOF_PUBLIC_JWK`,
 `MFA_PROOF_COOKIE`, `PROOF_TTL`) also appear only on the auth app.
