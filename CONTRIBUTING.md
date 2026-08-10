@@ -303,7 +303,8 @@ Both must pass before merge.
 CI builds all wizards and force-pushes built output to the `gh-pages` branch. jsDelivr picks it up within minutes (CI purges the cache after publish).
 
 The wizard is not yet live in the portal. The Gcore team then:
-1. Creates a FastEdge template with `WIZARD_SOURCE_CONFIG` pointing to the new wizard
+1. Runs `/wizard-publish` to set `WIZARD_SOURCE_CONFIG` (and `companionTemplateIds`,
+   for a multi-app wizard) on the launch FastEdge template via the Gcore API
 2. Verifies it against a real portal environment
 
 Once the template is published, the wizard is live.

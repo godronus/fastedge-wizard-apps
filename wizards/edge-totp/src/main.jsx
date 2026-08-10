@@ -237,7 +237,6 @@ function Wizard({ session, ctx, filterT, appT }) {
             labels={{ finish: 'Deploy' }}
             onNavigated={(e) => setStep(e.detail.to)}
             onFinish={handleFinish}
-            onCancel={() => session.dispose()}
         >
             <WizardStep title="Overview">
                 <StepOverview

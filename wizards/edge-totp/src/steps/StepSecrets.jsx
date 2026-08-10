@@ -7,10 +7,10 @@ export function StepSecrets({ session, f, set }) {
     // Wizard-defined HS256 keys → pickOrCreate({ bytes }): the host picker lets the user generate a
     // fresh 32-byte value OR reuse a secret a prior run created (rename-safe — picked from the live
     // list), so a re-run after a failed deploy no longer collides on the deterministic name.
-    const generate = (key, name, comment) => async () => {
+    const generate = (key, label, name, comment) => async () => {
         setBusy(key);
         try {
-            const rs = await optional(() => session.fastedge.secrets.pickOrCreate({ name, comment, bytes: 32 }));
+            const rs = await optional(() => session.fastedge.secrets.pickOrCreate({ name, comment, bytes: 32, label }));
             if (rs && rs.length) set({ [key]: rs[0] });
         } catch (err) {
             console.error(`secret pick/generate (${key}) failed:`, err);
@@ -23,7 +23,7 @@ export function StepSecrets({ session, f, set }) {
     async function selectToken() {
         setBusy('gcore');
         try {
-            const rs = await optional(() => session.fastedge.secrets.pickOrCreate());
+            const rs = await optional(() => session.fastedge.secrets.pickOrCreate({ label: 'Gcore API token' }));
             if (rs && rs.length) set({ gcore: rs[0] });
         } catch (err) {
             console.error('Gcore API token select failed:', err);
@@ -38,27 +38,27 @@ export function StepSecrets({ session, f, set }) {
                 Generate the signing keys and add the Gcore API token. The session key is
                 <strong> shared</strong> — created once and bound to both apps.
             </p>
-            <ResourceRow title={f.sessionKey ? f.sessionKey.name : 'Session signing key (shared)'}
+            <ResourceRow title="Session signing key (shared)"
                 sub="HS256, edge-internal. App signs mfa_session; filter verifies it." set={!!f.sessionKey}
-                onClear={() => set({ sessionKey: null })}>
-                <button onClick={generate('sessionKey', `${f.name}-mfa-session-key`, 'Shared HS256 mfa_session key')}
+                value={f.sessionKey?.name} onClear={() => set({ sessionKey: null })}>
+                <button onClick={generate('sessionKey', 'Session signing key (shared)', `${f.name}-mfa-session-key`, 'Shared HS256 mfa_session key')}
                     disabled={!!busy}>Select</button>
             </ResourceRow>
-            <ResourceRow title={f.handoff ? f.handoff.name : 'Handoff key'}
+            <ResourceRow title="Handoff key"
                 sub="HS256, shared with your origin. Copy the generated value into your origin's login code." set={!!f.handoff}
-                onClear={() => set({ handoff: null })}>
-                <button onClick={generate('handoff', `${f.name}-handoff-key`, 'HS256 handoff ticket key (shared with origin)')}
+                value={f.handoff?.name} onClear={() => set({ handoff: null })}>
+                <button onClick={generate('handoff', 'Handoff key', `${f.name}-handoff-key`, 'HS256 handoff ticket key (shared with origin)')}
                     disabled={!!busy}>Select</button>
             </ResourceRow>
-            <ResourceRow title={f.enroll ? f.enroll.name : 'Enroll API key'}
+            <ResourceRow title="Enroll API key"
                 sub="Bearer token gating POST {AUTH_PREFIX}/enroll." set={!!f.enroll}
-                onClear={() => set({ enroll: null })}>
-                <button onClick={generate('enroll', `${f.name}-enroll-api-key`, 'Bearer token for /enroll')}
+                value={f.enroll?.name} onClear={() => set({ enroll: null })}>
+                <button onClick={generate('enroll', 'Enroll API key', `${f.name}-enroll-api-key`, 'Bearer token for /enroll')}
                     disabled={!!busy}>Select</button>
             </ResourceRow>
             <ResourceRow title="Gcore API token"
                 sub="Real token with KV write access — select an existing secret or create one." set={!!f.gcore}
-                onClear={() => set({ gcore: null })}>
+                value={f.gcore?.name} onClear={() => set({ gcore: null })}>
                 <button onClick={selectToken} disabled={busy === 'gcore'}>Select</button>
             </ResourceRow>
         </>

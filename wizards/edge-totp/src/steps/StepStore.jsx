@@ -29,8 +29,9 @@ export function StepStore({ session, f, set }) {
                 plaintext-at-rest, and the API token you add next has write access to everything
                 in it.
             </Note>
-            <ResourceRow title={f.store ? f.store.name : 'No store selected'}
-                sub={f.store ? `store #${f.store.id}` : 'Create a new store or pick an existing one.'}
+            <ResourceRow title="KV store"
+                sub="Create a new store or pick an existing one."
+                value={f.store ? `${f.store.name} (#${f.store.id})` : undefined}
                 set={!!f.store} onClear={() => set({ store: null })}>
                 <button onClick={selectStore} disabled={busy}>Select</button>
             </ResourceRow>

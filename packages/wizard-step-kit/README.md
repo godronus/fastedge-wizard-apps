@@ -34,7 +34,6 @@ child DOM**, so React (or any framework) keeps ownership.
 | `error` | string | Validation message shown above nav |
 | `label-back` | string | Back button label (default "Back") |
 | `label-next` | string | Next button label (default "Next") |
-| `label-cancel` | string | Cancel button label (default "Cancel") |
 | `label-finish` | string | Finish button label on last step (default "Finish") |
 
 **Events** (all bubble)
@@ -44,7 +43,6 @@ child DOM**, so React (or any framework) keeps ownership.
 | `navigate` | ✓ | `{ from: number, to: number, reason: 'next'|'back'|'goto' }` |
 | `navigated` | — | `{ from: number, to: number }` |
 | `finish` | — | — |
-| `cancel` | — | — |
 
 `preventDefault()` on `navigate` vetoes the transition (e.g. for async validation).
 
@@ -101,8 +99,9 @@ resource" flows.
 
 | Attribute | Type | Description |
 |---|---|---|
-| `title` | string | Row title |
+| `title` | string | Row title — a fixed purpose label; don't overwrite it with a picked resource's name |
 | `sub` | string | Secondary line under the title |
+| `value` | string | Resolved resource's own name once set (e.g. the picked secret's name) — a third, truncating line; never put this in the badge, which is fixed-width |
 | `set` | boolean | Resource is set → badge reads `label-set`, styled "success" |
 | `clearable` | boolean | Show a clear (×) button in the badge while `set` |
 | `label-set` | string | Badge text when set (default "set") |
@@ -184,7 +183,6 @@ function MyWizard() {
             canAdvance={choice.length > 0}
             onNavigate={e => console.log('going to', e.detail.to)}
             onFinish={() => deploy()}
-            onCancel={() => close()}
             labels={{ finish: 'Deploy' }}
         >
             <WizardStep title="Choose app">

@@ -35,7 +35,7 @@ export function StepProfile({ session, f, set }) {
                         revocation.</p>
                     <ResourceRow title="ES256 proof keypair"
                         sub="Private key stored as a secret on the app; public JWK served at {AUTH_PREFIX}/.well-known/jwks.json."
-                        set={!!f.proofKey} onClear={() => set({ proofKey: null })}>
+                        set={!!f.proofKey} value={f.proofKey?.name} onClear={() => set({ proofKey: null })}>
                         <button onClick={genKeypair} disabled={busy}>Generate keypair</button>
                     </ResourceRow>
                     <Field label="Proof TTL (seconds)" value={f.proofTtl}

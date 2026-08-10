@@ -12,14 +12,13 @@ import { useEffect, useRef, createElement as h } from 'react';
 
 /**
  * @param {{ canAdvance?: boolean, error?: string,
- *           labels?: { back?: string, next?: string, cancel?: string, finish?: string },
+ *           labels?: { back?: string, next?: string, finish?: string },
  *           onNavigate?: (e: CustomEvent) => void,
  *           onNavigated?: (e: CustomEvent) => void,
  *           onFinish?: (e: CustomEvent) => void,
- *           onCancel?: (e: CustomEvent) => void,
  *           children?: React.ReactNode }} props
  */
-export function WizardShell({ canAdvance = false, error, labels = {}, onNavigate, onNavigated, onFinish, onCancel, children }) {
+export function WizardShell({ canAdvance = false, error, labels = {}, onNavigate, onNavigated, onFinish, children }) {
     const ref = useRef(null);
 
     useEffect(() => {
@@ -28,18 +27,15 @@ export function WizardShell({ canAdvance = false, error, labels = {}, onNavigate
         const nav  = e => onNavigate?.(e);
         const navd = e => onNavigated?.(e);
         const fin  = e => onFinish?.(e);
-        const can  = e => onCancel?.(e);
         el.addEventListener('navigate',  nav);
         el.addEventListener('navigated', navd);
         el.addEventListener('finish',    fin);
-        el.addEventListener('cancel',    can);
         return () => {
             el.removeEventListener('navigate',  nav);
             el.removeEventListener('navigated', navd);
             el.removeEventListener('finish',    fin);
-            el.removeEventListener('cancel',    can);
         };
-    }, [onNavigate, onNavigated, onFinish, onCancel]);
+    }, [onNavigate, onNavigated, onFinish]);
 
     useEffect(() => {
         const el = ref.current;
@@ -57,10 +53,9 @@ export function WizardShell({ canAdvance = false, error, labels = {}, onNavigate
     useEffect(() => {
         const el = ref.current;
         if (!el) return;
-        const { back, next, cancel, finish } = labels;
+        const { back, next, finish } = labels;
         if (back   != null) el.setAttribute('label-back',   back);
         if (next   != null) el.setAttribute('label-next',   next);
-        if (cancel != null) el.setAttribute('label-cancel', cancel);
         if (finish != null) el.setAttribute('label-finish', finish);
     }, [labels]);
 
@@ -106,12 +101,12 @@ export function WizardPanel({ value, label, children }) {
 }
 
 /**
- * @param {{ title: string, sub?: string, set?: boolean,
+ * @param {{ title: string, sub?: string, value?: string, set?: boolean,
  *           onClear?: (e: CustomEvent) => void,
  *           labels?: { set?: string, unset?: string, clear?: string },
  *           children?: React.ReactNode }} props
  */
-export function ResourceRow({ title, sub, set = false, onClear, labels = {}, children }) {
+export function ResourceRow({ title, sub, value, set = false, onClear, labels = {}, children }) {
     const ref = useRef(null);
 
     useEffect(() => {
@@ -127,7 +122,8 @@ export function ResourceRow({ title, sub, set = false, onClear, labels = {}, chi
         if (!el) return;
         if (title != null) el.setAttribute('title', title); else el.removeAttribute('title');
         if (sub   != null) el.setAttribute('sub', sub);      else el.removeAttribute('sub');
-    }, [title, sub]);
+        if (value != null) el.setAttribute('value', value);  else el.removeAttribute('value');
+    }, [title, sub, value]);
 
     useEffect(() => {
         const el = ref.current;
