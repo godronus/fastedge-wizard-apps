@@ -1,6 +1,6 @@
 // src/gc-wizard-shell.js
 var GcWizardShell = class extends HTMLElement {
-  static observedAttributes = ["can-advance", "error", "label-back", "label-next", "label-cancel", "label-finish"];
+  static observedAttributes = ["can-advance", "error", "label-back", "label-next", "label-finish"];
   #current = 0;
   #highWaterMark = 0;
   #indicator = null;
@@ -8,7 +8,6 @@ var GcWizardShell = class extends HTMLElement {
   #navDiv = null;
   #btnBack = null;
   #btnNext = null;
-  #btnCancel = null;
   #mo = null;
   connectedCallback() {
     if (!this.#indicator) this.#build();
@@ -33,18 +32,13 @@ var GcWizardShell = class extends HTMLElement {
     this.#errorDiv.className = "wizard-error";
     this.#errorDiv.setAttribute("role", "alert");
     this.#errorDiv.hidden = true;
-    this.#btnCancel = this.#mkBtn("wizard-btn-cancel", this.getAttribute("label-cancel") || "Cancel");
     this.#btnBack = this.#mkBtn("wizard-btn-back", this.getAttribute("label-back") || "Back");
     this.#btnNext = this.#mkBtn("wizard-btn-next", this.getAttribute("label-next") || "Next");
-    this.#btnCancel.addEventListener(
-      "click",
-      () => this.dispatchEvent(new CustomEvent("cancel", { bubbles: true }))
-    );
     this.#btnBack.addEventListener("click", () => this.#go(this.#current - 1, "back"));
     this.#btnNext.addEventListener("click", () => this.#go(this.#current + 1, "next"));
     this.#navDiv = document.createElement("div");
     this.#navDiv.className = "wizard-nav";
-    this.#navDiv.append(this.#btnCancel, this.#btnBack, this.#btnNext);
+    this.#navDiv.append(this.#btnBack, this.#btnNext);
     this.prepend(this.#indicator, this.#errorDiv);
     this.append(this.#navDiv);
     this.#rebuildIndicator();
@@ -69,6 +63,8 @@ var GcWizardShell = class extends HTMLElement {
       btn.className = "wizard-step-btn";
       if (i === this.#current) btn.setAttribute("aria-current", "step");
       if (i < this.#highWaterMark && i !== this.#current) btn.classList.add("wizard-step--complete");
+      btn.disabled = i > this.#highWaterMark;
+      btn.setAttribute("aria-disabled", String(i > this.#highWaterMark));
       btn.textContent = step.getAttribute("title") || `Step ${i + 1}`;
       btn.addEventListener("click", () => this.#go(i, "goto"));
       this.#indicator.append(btn);
@@ -87,6 +83,8 @@ var GcWizardShell = class extends HTMLElement {
       if (i === index) btn.setAttribute("aria-current", "step");
       else btn.removeAttribute("aria-current");
       btn.classList.toggle("wizard-step--complete", i < this.#highWaterMark && i !== index);
+      btn.disabled = i > this.#highWaterMark;
+      btn.setAttribute("aria-disabled", String(i > this.#highWaterMark));
     });
     this.#updateNavVisibility();
     this.#updateNext();
@@ -106,6 +104,7 @@ var GcWizardShell = class extends HTMLElement {
       return;
     }
     if (to < 0 || to >= steps.length) return;
+    if (reason === "goto" && to > this.#highWaterMark) return;
     const ev = new CustomEvent("navigate", {
       bubbles: true,
       cancelable: true,
@@ -138,7 +137,6 @@ var GcWizardShell = class extends HTMLElement {
   #updateLabels() {
     if (!this.#btnBack) return;
     this.#btnBack.textContent = this.getAttribute("label-back") || "Back";
-    this.#btnCancel.textContent = this.getAttribute("label-cancel") || "Cancel";
     this.#updateNext();
   }
   #updateNavVisibility() {
@@ -233,10 +231,20 @@ customElements.define("gc-optional-panels", GcOptionalPanels);
 
 // src/gc-resource-row.js
 var GcResourceRow = class extends HTMLElement {
-  static observedAttributes = ["title", "sub", "set", "clearable", "label-set", "label-unset", "label-clear"];
+  static observedAttributes = [
+    "title",
+    "sub",
+    "value",
+    "set",
+    "clearable",
+    "label-set",
+    "label-unset",
+    "label-clear"
+  ];
   #main = null;
   #titleEl = null;
   #subEl = null;
+  #valueEl = null;
   #badge = null;
   connectedCallback() {
     if (!this.#main) this.#build();
@@ -253,7 +261,9 @@ var GcResourceRow = class extends HTMLElement {
     this.#titleEl.className = "wizard-row-title";
     this.#subEl = document.createElement("div");
     this.#subEl.className = "wizard-row-sub";
-    this.#main.append(this.#titleEl, this.#subEl);
+    this.#valueEl = document.createElement("div");
+    this.#valueEl.className = "wizard-row-value";
+    this.#main.append(this.#titleEl, this.#subEl, this.#valueEl);
     this.#badge = document.createElement("span");
     this.#badge.className = "wizard-row-badge";
     this.prepend(this.#main);
@@ -265,6 +275,11 @@ var GcResourceRow = class extends HTMLElement {
     const sub = this.getAttribute("sub");
     this.#subEl.textContent = sub || "";
     this.#subEl.hidden = !sub;
+    const value = this.getAttribute("value");
+    this.#valueEl.textContent = value || "";
+    this.#valueEl.hidden = !value;
+    if (value) this.#valueEl.title = value;
+    else this.#valueEl.removeAttribute("title");
     const isSet = this.hasAttribute("set");
     this.#badge.classList.toggle("wizard-row-badge--set", isSet);
     this.#badge.textContent = isSet ? this.getAttribute("label-set") || "set" : this.getAttribute("label-unset") || "not set";
