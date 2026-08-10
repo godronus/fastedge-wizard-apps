@@ -220,7 +220,7 @@ independently — their `WIZARD_SOURCE_CONFIG` ref/cdn need not match this repo'
 | Wizard | Directory | Status | Notes |
 |--------|-----------|--------|-------|
 | Intent reference (all v1 write intents, heavily commented) | `wizards/_example-intents/` | Active (dev-only, not published) | See `src/main.js` — copy patterns from here |
-| edge-totp (two-app: `proxy-wasm` filter + `wasi-http` app, CDN wiring) | `wizards/edge-totp/` | Active — reference React / multi-app wizard | Built in the "real wizard" experiment; canonical example for CDN rules/origins, shared secrets, KV store binding, and Profile A/B |
+| edge-totp (two-app: `proxy-wasm` filter + `wasi-http` app, CDN wiring) | `wizards/edge-totp/` | Active — reference React / multi-app wizard | Built in the "real wizard" experiment; canonical example for CDN rules/origins, shared secrets, Edge Storage binding, and Profile A/B |
 | edge-sso (two-app: `wasi-http` auth-app + `proxy-wasm` filter, 3 variants) | `wizards/edge-sso/` | Active — reference multi-variant wizard | Launch template is an inert placeholder; all 6 real templates are companions (3 variants × {auth-app, filter}). Canonical example for a "pick 2 of N companions" variant picker and ES256-keypair vs. shared-secret session signing |
 
 > Starters (not wizards): `wizards/_template` (vanilla), `wizards/_template-react` (React).

@@ -259,7 +259,7 @@ function Wizard({ session, ctx, filterT, appT }) {
                     set={set}
                 />
             </WizardStep>
-            <WizardStep title="KV store">
+            <WizardStep title="Edge Storage">
                 <StepStore
                     session={session}
                     f={f}

@@ -35,9 +35,9 @@
 | `MFA_SESSION_KEY` | secret | **true** | | HS256 key to sign the mfa_session JWT. Same value on both. |
 | `HANDOFF_KEY` | secret | **true** | | HS256 key shared with the customer origin (signs handoff ticket; app verifies). |
 | `ENROLL_API_KEY` | secret | **true** | | Bearer token gating `POST {AUTH_PREFIX}/enroll`. |
-| `GCORE_API_TOKEN` | secret | **true** | | Gcore API token with KV write access (used by /enroll). |
-| `KV_STORE_NAME` | string | **true** | | Name of the KV store holding TOTP seeds. |
-| `KV_STORE_ID` | string | **true** | | Numeric KV store ID (used for KV REST writes). |
+| `GCORE_API_TOKEN` | secret | **true** | | Gcore API token with Edge Storage write access (used by /enroll). |
+| `KV_STORE_NAME` | string | **true** | | Name of the Edge Storage instance holding TOTP seeds. |
+| `KV_STORE_ID` | string | **true** | | Numeric Edge Storage instance ID (used for KV REST writes). |
 | `MFA_AUDIENCE` | string | false* | | Audience claim. *Optional here but required when the filter is deployed (see constraints). |
 | `MFA_ISSUER` | string | false | | Issuer claim. Defense-in-depth; must match filter if set. |
 | `MFA_SESSION_COOKIE` | string | false | `mfa_session` | Cookie name carrying the token. Must match filter. |
@@ -90,12 +90,12 @@ Create each once via the portal; for shared secrets bind the same id to both app
 - `GCORE_API_TOKEN` (app only). Real Gcore API token — user must paste (`secrets.create`/`pick`), not generate.
 - `MFA_PROOF_SIGNING_KEY` (app only, **Profile B**). ES256 P-256 private key → `secrets.generateKeypair`; the public JWK feeds `MFA_PROOF_PUBLIC_JWK`.
 
-## KV stores
+## Edge Storage
 
 App-only. Both `mandatory:true`, typed `string` (not `store`) — treat like store params:
 
-- `KV_STORE_NAME`, `KV_STORE_ID` — pick/create a **single-tenant** store, then inject
-  both `{ id, name }` into the app env **before** `deployment.plan()`.
+- `KV_STORE_NAME`, `KV_STORE_ID` — pick/create a **single-tenant** Edge Storage instance, then
+  inject both `{ id, name }` into the app env **before** `deployment.plan()`.
   Do **not** use `newFastedgeStores` (no store-ref substitution at plan time).
 
 ## CDN wiring

@@ -57,7 +57,7 @@ export function StepSecrets({ session, f, set }) {
                     disabled={!!busy}>Select</button>
             </ResourceRow>
             <ResourceRow title="Gcore API token"
-                sub="Real token with KV write access — select an existing secret or create one." set={!!f.gcore}
+                sub="Real token with Edge Storage write access — select an existing secret or create one." set={!!f.gcore}
                 value={f.gcore?.name} onClear={() => set({ gcore: null })}>
                 <button onClick={selectToken} disabled={busy === 'gcore'}>Select</button>
             </ResourceRow>

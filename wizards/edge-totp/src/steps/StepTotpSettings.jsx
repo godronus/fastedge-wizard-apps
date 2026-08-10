@@ -43,9 +43,9 @@ export function StepTotpSettings({ f, set }) {
                     <Field label="Ticket TTL (seconds)" value={f.ticketTtl}
                         onChange={(v) => set({ ticketTtl: v })}
                         hint="Handoff ticket lifetime. Short TTL is intentional — the user is mid-login. Default: 90" />
-                    <Field label="KV key prefix" value={f.kvPrefix}
+                    <Field label="Storage key prefix" value={f.kvPrefix}
                         onChange={(v) => set({ kvPrefix: v })}
-                        hint="Prefix prepended to userId for KV keys. Override only to share one store across multiple apps. Default: totp:" />
+                        hint="Prefix prepended to userId for Edge Storage keys. Override only to share one instance across multiple apps. Default: totp:" />
                     <label className="totp-field">
                         <span>Allow self-enrollment</span>
                         <select value={f.selfEnroll} onChange={(e) => set({ selfEnroll: e.target.value })}>

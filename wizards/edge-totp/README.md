@@ -11,7 +11,7 @@ enforcement happen before requests reach the customer origin.
 |----------|------|
 | **TOTP - MFA Enforcement Filter** (`proxy-wasm`) | Verifies the `mfa_session` JWT cookie on every protected request. Fail-closed: rejects everything unless a valid, correctly-audienced session is present. |
 | **TOTP - Challenge-Verify App** (`wasi-http`) | Hosts the OTP enrolment/verification pages and issues the signed `mfa_session` cookie. |
-| **KV store** | Holds per-user TOTP seeds. |
+| **Edge Storage** | Holds per-user TOTP seeds. |
 | **CDN origin + rules** | One origin for the app, a route sending `AUTH_PREFIX` paths to it, and the filter attached in front of everything else. |
 
 Both apps must share **one CDN host** so the `mfa_session` cookie is first-party,
@@ -28,7 +28,7 @@ The two templates are identified at runtime by `api_type` (from `launchTemplateI
 | 1 | Overview | Deployment name (used to name the apps, origin, and rules) |
 | 2 | CDN resource | Pick the CDN resource the apps sit behind |
 | 3 | Routing & tokens | `MFA_AUDIENCE` (fail-closed) + an `AUTH_PREFIX` starting with `/` |
-| 4 | KV store | Pick or create the KV store for TOTP seeds |
+| 4 | Edge Storage | Pick or create the Edge Storage instance for TOTP seeds |
 | 5 | Secrets | Four secrets: session key, handoff key, enrol API key, Gcore API token |
 | 6 | Profile | Profile A or B (see below) |
 | 7 | TOTP settings | Optional — issuer, digits, period, algorithm, drift |

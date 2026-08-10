@@ -120,9 +120,9 @@ Inferred (stated in source-repo prose, not literally in a param `descr`):
 
 No `data_type: "secret"` param is mandatory except `SESSION_SECRET` (gate-only/header) and `SESSION_SIGNING_KEY` (cookie) — both are the session-signing key and always required for whichever variant is chosen. All OAuth/SAML provider secrets are `mandatory: false` at the API level but are the de facto trigger for enabling that provider (see Profile/variant branches).
 
-## KV stores
+## Edge Storage
 
-None. The source repo README/overview.md is explicit: **"KV is explicitly NOT used for config — too expensive per read."** No `data_type: "store"` params exist on any of the six templates. Unlike edge-totp, this wizard has no KV step.
+None. The source repo README/overview.md is explicit: **"KV is explicitly NOT used for config — too expensive per read."** No `data_type: "store"` params exist on any of the six templates. Unlike edge-totp, this wizard has no Edge Storage step.
 
 ## CDN wiring
 
