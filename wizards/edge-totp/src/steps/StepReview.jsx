@@ -9,6 +9,8 @@ export function StepReview({ f, deploy, filterT, appT }) {
                 <dt>CDN resource</dt><dd>{f.cdn?.cname} (#{f.cdn?.id})</dd>
                 <dt>Apps</dt><dd>{f.name}-filter ({filterT?.name}) + {f.name}-app ({appT?.name})</dd>
                 <dt>Auth prefix</dt><dd>{f.authPrefix}</dd>
+                <dt>Protection scope</dt>
+                <dd>{f.protectionScope === 'all' ? 'Entire site' : f.protectedPaths}</dd>
                 <dt>MFA audience</dt><dd>{f.audience}</dd>
                 <dt>Session cookie</dt><dd>{f.cookie}{f.issuer ? ` · issuer ${f.issuer}` : ''}</dd>
                 <dt>Edge Storage</dt><dd>{f.store?.name} (#{f.store?.id})</dd>
