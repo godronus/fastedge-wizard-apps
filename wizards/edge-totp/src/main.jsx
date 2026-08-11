@@ -35,6 +35,10 @@ function Wizard({ session, ctx, filterT, appT }) {
         cookie: 'mfa_session',
         issuer: '',
         loginUrl: '',
+        // Protection scope — no default: forces an explicit choice instead of silently
+        // protecting the entire CDN resource.
+        protectionScope: '',
+        protectedPaths: '',
         // KV store
         store: null,
         // Secrets
@@ -85,7 +89,13 @@ function Wizard({ session, ctx, filterT, appT }) {
             case 1:
                 return !!f.cdn;
             case 2:
-                return !!f.audience.trim() && f.authPrefix.startsWith('/') && f.authPrefix.length > 1;
+                return (
+                    !!f.audience.trim() &&
+                    f.authPrefix.startsWith('/') &&
+                    f.authPrefix.length > 1 &&
+                    (f.protectionScope === 'all' ||
+                        (f.protectionScope === 'paths' && !!f.protectedPaths.trim()))
+                );
             case 3:
                 return !!f.store;
             case 4:
@@ -171,6 +181,33 @@ function Wizard({ session, ctx, filterT, appT }) {
             ...(f.profile === 'B' ? { MFA_PROOF_SIGNING_KEY: f.proofKey.id } : {}),
         };
 
+        // Protection scope: either one catch-all rule, or one rule per protected path prefix.
+        // Every rule binds the same filter app — the filter self-bypasses AUTH_PREFIX + /health
+        // internally regardless of which CDN rule(s) route to it.
+        const filterRules =
+            f.protectionScope === 'all'
+                ? [
+                      {
+                          // Match every path (the CDN API rejects a rule of only slashes, so not '^/').
+                          ref: 'filter-rule',
+                          name: `${f.name}-mfa-filter`,
+                          rule: '^/.*',
+                          weight: 1,
+                          fastedgeFilter: { appRef: 'filter', hook: 'on_request_headers', interruptOnError: true },
+                      },
+                  ]
+                : f.protectedPaths
+                      .split(',')
+                      .map((p) => p.trim())
+                      .filter(Boolean)
+                      .map((path, i) => ({
+                          ref: `filter-rule-${i}`,
+                          name: `${f.name}-mfa-filter-${i + 1}`,
+                          rule: `^${escapeRegex(path)}`,
+                          weight: 1,
+                          fastedgeFilter: { appRef: 'filter', hook: 'on_request_headers', interruptOnError: true },
+                      }));
+
         const planParams = {
             fastedgeApps: [
                 {
@@ -202,16 +239,7 @@ function Wizard({ session, ctx, filterT, appT }) {
                     weight: 10,
                     originGroupRef: 'app-origin',
                 },
-                // Enforce the filter on everything else (it self-bypasses AUTH_PREFIX + /health).
-                {
-                    // Match every path (the CDN API rejects a rule of only slashes, so not '^/').
-                    // The filter self-bypasses AUTH_PREFIX + /health internally.
-                    ref: 'filter-rule',
-                    name: `${f.name}-mfa-filter`,
-                    rule: '^/.*',
-                    weight: 1,
-                    fastedgeFilter: { appRef: 'filter', hook: 'on_request_headers', interruptOnError: true },
-                },
+                ...filterRules,
             ],
         };
 
