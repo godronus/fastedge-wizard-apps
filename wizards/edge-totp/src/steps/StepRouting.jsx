@@ -67,8 +67,17 @@ export function StepRouting({ f, set }) {
                 value={f.loginUrl}
                 onChange={(v) => set({ loginUrl: v })}
                 placeholder="https://app.example.com/login/mfa"
-                hint="Where the filter redirects unauthenticated users. Blank → the filter returns 401 instead (useful for APIs)."
+                hint="A page on YOUR origin that starts the challenge — not the totp-app URL itself. Leave
+                    blank only if every protected path is an API a browser never hits directly."
             />
+            {!f.loginUrl && (
+                <Note kind="danger">
+                    <strong>No Login URL set:</strong> anyone hitting a protected path without a
+                    session will see a bare <code>401 &quot;MFA required&quot;</code> response, not a
+                    challenge screen. For a checkout page, account area, or anything a person opens in
+                    a browser, this is almost never what you want — set this before deploying.
+                </Note>
+            )}
         </>
     );
 }

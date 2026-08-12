@@ -37,8 +37,19 @@ export function StepReview({ f, deploy, authT, filterT }) {
             <DeployProgress state={d} />
 
             {d.result?.status === 'complete' && f.variant === 'cookie' &&
-                <p className="sso-lede">Next: point your origin&apos;s JWKS client at{' '}
-                    <code>{f.authPrefix}/.well-known/jwks.json</code> to verify the session cookie itself.</p>}
+                <p className="sso-lede">SSO is now set up — the edge already verifies the session on every
+                    request before your origin sees it. If you&apos;d like to read the user&apos;s identity yourself,
+                    you can optionally verify the <code>{f.cookie}</code> cookie&apos;s JWT (ES256) against the JWKS
+                    at <code>{f.authPrefix}/.well-known/jwks.json</code> — check <code>aud</code> equals{' '}
+                    <code>{f.audience}</code>{f.issuer && <> and <code>iss</code> equals <code>{f.issuer}</code></>}.</p>}
+
+            {d.result?.status === 'complete' && f.variant === 'header' &&
+                <p className="sso-lede">SSO is now set up. Your origin receives the authenticated user&apos;s
+                    identity via the <code>x-sso-user</code> header (plus <code>x-sso-*</code> for any extra claims
+                    configured on the app). These headers aren&apos;t signed — your origin trusts them only because
+                    the edge filter guarantees they&apos;re never set on an unauthenticated request. Lock your
+                    origin down to accept traffic only from this CDN resource, otherwise someone could send
+                    spoofed <code>x-sso-*</code> headers directly to it.</p>}
         </>
     );
 }
