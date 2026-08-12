@@ -1,6 +1,14 @@
 // src/gc-wizard-shell.js
 var GcWizardShell = class extends HTMLElement {
-  static observedAttributes = ["can-advance", "error", "label-back", "label-next", "label-finish"];
+  static observedAttributes = [
+    "can-advance",
+    "finished",
+    "error",
+    "label-back",
+    "label-next",
+    "label-finish",
+    "label-finished"
+  ];
   #current = 0;
   #highWaterMark = 0;
   #indicator = null;
@@ -18,7 +26,10 @@ var GcWizardShell = class extends HTMLElement {
   attributeChangedCallback(name) {
     if (!this.#navDiv) return;
     if (name === "can-advance") this.#updateNext();
-    else if (name === "error") this.#updateError();
+    else if (name === "finished") {
+      this.#updateNext();
+      this.#updateNavVisibility();
+    } else if (name === "error") this.#updateError();
     else this.#updateLabels();
   }
   #steps() {
@@ -35,7 +46,13 @@ var GcWizardShell = class extends HTMLElement {
     this.#btnBack = this.#mkBtn("wizard-btn-back", this.getAttribute("label-back") || "Back");
     this.#btnNext = this.#mkBtn("wizard-btn-next", this.getAttribute("label-next") || "Next");
     this.#btnBack.addEventListener("click", () => this.#go(this.#current - 1, "back"));
-    this.#btnNext.addEventListener("click", () => this.#go(this.#current + 1, "next"));
+    this.#btnNext.addEventListener("click", () => {
+      if (this.hasAttribute("finished")) {
+        this.dispatchEvent(new CustomEvent("wizard-finished", { bubbles: true }));
+        return;
+      }
+      this.#go(this.#current + 1, "next");
+    });
     this.#navDiv = document.createElement("div");
     this.#navDiv.className = "wizard-nav";
     this.#navDiv.append(this.#btnBack, this.#btnNext);
@@ -123,10 +140,11 @@ var GcWizardShell = class extends HTMLElement {
     if (!this.#btnNext) return;
     const steps = this.#steps();
     const isLast = this.#current === steps.length - 1;
-    const canAdvance = this.hasAttribute("can-advance");
-    this.#btnNext.textContent = isLast ? this.getAttribute("label-finish") || "Finish" : this.getAttribute("label-next") || "Next";
-    this.#btnNext.disabled = !canAdvance;
-    this.#btnNext.setAttribute("aria-disabled", String(!canAdvance));
+    const finished = this.hasAttribute("finished");
+    this.#btnNext.textContent = finished ? this.getAttribute("label-finished") || "Finished" : isLast ? this.getAttribute("label-finish") || "Finish" : this.getAttribute("label-next") || "Next";
+    const disabled = finished ? false : !this.hasAttribute("can-advance");
+    this.#btnNext.disabled = disabled;
+    this.#btnNext.setAttribute("aria-disabled", String(disabled));
   }
   #updateError() {
     if (!this.#errorDiv) return;
@@ -141,7 +159,7 @@ var GcWizardShell = class extends HTMLElement {
   }
   #updateNavVisibility() {
     if (!this.#btnBack) return;
-    this.#btnBack.hidden = this.#current === 0;
+    this.#btnBack.hidden = this.#current === 0 || this.hasAttribute("finished");
   }
 };
 customElements.define("gc-wizard-shell", GcWizardShell);
