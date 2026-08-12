@@ -355,6 +355,7 @@ function App() {
                 const ctx = await session.context.get();
 
                 if (ctx.launchTemplateId === null) {
+                    session?.dispose();
                     setState({
                         status: 'error',
                         error: 'Opened in re-entry mode — launch from the TOTP template to deploy.',
@@ -368,6 +369,7 @@ function App() {
                 const appT = details.find((t) => t.api_type === 'wasi-http');
 
                 if (!filterT || !appT) {
+                    session?.dispose();
                     setState({
                         status: 'error',
                         error: 'Expected one proxy-wasm filter and one wasi-http app. Check companion templates.',

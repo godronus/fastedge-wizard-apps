@@ -314,6 +314,7 @@ function App() {
                 const ctx = await session.context.get();
 
                 if (ctx.launchTemplateId === null) {
+                    session?.dispose();
                     setState({
                         status: 'error',
                         error: 'Opened in re-entry mode — launch from the SSO template to deploy.',
@@ -323,6 +324,7 @@ function App() {
                 // The launch template (737) is an inert placeholder — only the
                 // companions carry real params. Never read the launch template itself.
                 if (ctx.companionTemplateIds.length !== 6) {
+                    session?.dispose();
                     setState({
                         status: 'error',
                         error: `Expected 6 companion templates (3 variants × 2 apps), got ${ctx.companionTemplateIds.length}. Check the wizard's template wiring.`,
@@ -334,6 +336,7 @@ function App() {
                 );
                 const byVariant = classifyTemplates(details);
                 if (VARIANTS.some((v) => !byVariant[v]?.auth || !byVariant[v]?.filter)) {
+                    session?.dispose();
                     setState({
                         status: 'error',
                         error: 'Could not identify an auth-app + cdn-filter pair for every variant (gate-only/cookie/header). Check companion template names.',
