@@ -267,9 +267,11 @@ function Wizard({ session, byVariant }) {
     return (
         <WizardShell
             canAdvance={canAdvance}
-            labels={{ finish: 'Deploy' }}
+            finished={deploy.state.status === 'done'}
+            labels={{ finish: 'Deploy', finished: 'Finished' }}
             onNavigated={(e) => setStep(e.detail.to)}
             onFinish={handleFinish}
+            onWizardFinished={() => session.wizard.finish()}
         >
             <WizardStep title="Overview">
                 <StepOverview f={f} set={set} />

@@ -164,8 +164,10 @@ function Wizard({ session, ctx, filterT, appT }) {
                 : {};
 
         const appEnv = {
+            // Read access to the seed store comes from storeRefs below (the platform-level
+            // binding KvStore.open("TOTP_USER_SEEDS") needs) — KV_STORE_ID here is only for
+            // the write-via-API path, which the fastedge::kv binding can't do.
             KV_STORE_ID: String(f.store.id),
-            KV_STORE_NAME: f.store.name,
             ...(f.profile === 'B' ? { MFA_PROOF_PUBLIC_JWK: f.proofKey.publicKey } : {}),
             ...totpEnv,
             ...policyEnv,
@@ -180,6 +182,11 @@ function Wizard({ session, ctx, filterT, appT }) {
             GCORE_API_TOKEN: f.gcore.id,
             ...(f.profile === 'B' ? { MFA_PROOF_SIGNING_KEY: f.proofKey.id } : {}),
         };
+
+        // Grants the app's fastedge::kv binding access to the selected store, under the
+        // fixed param name the template declares (registry.json TOTP_USER_SEEDS, data_type
+        // "store"). Env vars alone never do this — see wizard-sdk docs/quickstart.md.
+        const appStoreRefs = { TOTP_USER_SEEDS: f.store.id };
 
         // Protection scope: either one catch-all rule, or one rule per protected path prefix.
         // Every rule binds the same filter app — the filter self-bypasses AUTH_PREFIX + /health
@@ -225,6 +232,7 @@ function Wizard({ session, ctx, filterT, appT }) {
                     source: { fromTemplateId: appT.id },
                     env: appEnv,
                     secretRefs: appSecrets,
+                    storeRefs: appStoreRefs,
                 },
             ],
             sharedEnv,
@@ -262,9 +270,11 @@ function Wizard({ session, ctx, filterT, appT }) {
     return (
         <WizardShell
             canAdvance={canAdvance}
-            labels={{ finish: 'Deploy' }}
+            finished={deploy.state.status === 'done'}
+            labels={{ finish: 'Deploy', finished: 'Finished' }}
             onNavigated={(e) => setStep(e.detail.to)}
             onFinish={handleFinish}
+            onWizardFinished={() => session.wizard.finish()}
         >
             <WizardStep title="Overview">
                 <StepOverview

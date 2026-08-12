@@ -11,14 +11,25 @@
 import { useEffect, useRef, createElement as h } from 'react';
 
 /**
- * @param {{ canAdvance?: boolean, error?: string,
- *           labels?: { back?: string, next?: string, finish?: string },
+ * @param {{ canAdvance?: boolean, finished?: boolean, error?: string,
+ *           labels?: { back?: string, next?: string, finish?: string, finished?: string },
  *           onNavigate?: (e: CustomEvent) => void,
  *           onNavigated?: (e: CustomEvent) => void,
  *           onFinish?: (e: CustomEvent) => void,
+ *           onWizardFinished?: (e: CustomEvent) => void,
  *           children?: React.ReactNode }} props
  */
-export function WizardShell({ canAdvance = false, error, labels = {}, onNavigate, onNavigated, onFinish, children }) {
+export function WizardShell({
+    canAdvance = false,
+    finished = false,
+    error,
+    labels = {},
+    onNavigate,
+    onNavigated,
+    onFinish,
+    onWizardFinished,
+    children,
+}) {
     const ref = useRef(null);
 
     useEffect(() => {
@@ -27,21 +38,30 @@ export function WizardShell({ canAdvance = false, error, labels = {}, onNavigate
         const nav  = e => onNavigate?.(e);
         const navd = e => onNavigated?.(e);
         const fin  = e => onFinish?.(e);
-        el.addEventListener('navigate',  nav);
-        el.addEventListener('navigated', navd);
-        el.addEventListener('finish',    fin);
+        const wfin = e => onWizardFinished?.(e);
+        el.addEventListener('navigate',       nav);
+        el.addEventListener('navigated',      navd);
+        el.addEventListener('finish',         fin);
+        el.addEventListener('wizard-finished', wfin);
         return () => {
-            el.removeEventListener('navigate',  nav);
-            el.removeEventListener('navigated', navd);
-            el.removeEventListener('finish',    fin);
+            el.removeEventListener('navigate',       nav);
+            el.removeEventListener('navigated',      navd);
+            el.removeEventListener('finish',         fin);
+            el.removeEventListener('wizard-finished', wfin);
         };
-    }, [onNavigate, onNavigated, onFinish]);
+    }, [onNavigate, onNavigated, onFinish, onWizardFinished]);
 
     useEffect(() => {
         const el = ref.current;
         if (!el) return;
         el.toggleAttribute('can-advance', canAdvance);
     }, [canAdvance]);
+
+    useEffect(() => {
+        const el = ref.current;
+        if (!el) return;
+        el.toggleAttribute('finished', finished);
+    }, [finished]);
 
     useEffect(() => {
         const el = ref.current;
@@ -53,10 +73,11 @@ export function WizardShell({ canAdvance = false, error, labels = {}, onNavigate
     useEffect(() => {
         const el = ref.current;
         if (!el) return;
-        const { back, next, finish } = labels;
-        if (back   != null) el.setAttribute('label-back',   back);
-        if (next   != null) el.setAttribute('label-next',   next);
-        if (finish != null) el.setAttribute('label-finish', finish);
+        const { back, next, finish, finished: finishedLabel } = labels;
+        if (back          != null) el.setAttribute('label-back',     back);
+        if (next          != null) el.setAttribute('label-next',     next);
+        if (finish        != null) el.setAttribute('label-finish',   finish);
+        if (finishedLabel != null) el.setAttribute('label-finished', finishedLabel);
     }, [labels]);
 
     return h('gc-wizard-shell', { ref }, children);
