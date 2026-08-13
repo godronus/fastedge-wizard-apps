@@ -38,7 +38,6 @@ export function StepReview({ f, deploy, filterT, appT }) {
                     <dt>Ticket TTL</dt><dd>{f.ticketTtl}s</dd>
                     <dt>Storage key prefix</dt><dd>{f.kvPrefix}</dd>
                     <dt>Self-enrollment</dt><dd>{f.selfEnroll}</dd>
-                    {f.gcoreApiUrl !== 'https://api.gcore.com' && <><dt>Gcore API URL</dt><dd>{f.gcoreApiUrl}</dd></>}
                 </>}
                 {f.brandMode === 'custom' && <>
                     <dt>Branding</dt><dd>{f.brandName || '(no name)'}{f.brandLogo ? ' · logo set' : ''}{f.brandFavicon ? ' · favicon set' : ''}</dd>
@@ -54,7 +53,8 @@ export function StepReview({ f, deploy, filterT, appT }) {
                 <div className="totp-lede">
                     <p>MFA is now set up. To integrate your origin with the challenge/verify flow:</p>
                     <ul>
-                        <li>Send users who need verification to the challenge endpoint at <code>{f.authPrefix}/challenge</code>.</li>
+                        <li>Send users who need verification to the challenge endpoint at<br />
+                            <code>{f.authPrefix}/challenge</code>.</li>
                         <li>After a successful challenge, read the proof JWT from the <code>{f.proofCookie}</code> cookie and verify its ES256 signature against the JWKS already served at <code>{f.authPrefix}/.well-known/jwks.json</code> — you don&apos;t need to publish anything yourself.</li>
                         <li>Check the JWT&apos;s <code>aud</code> claim equals <code>{f.audience}</code>{f.issuer && <> and <code>iss</code> equals <code>{f.issuer}</code></>}, and that <code>sub</code> matches the user you sent to the challenge.</li>
                         <li>Lock your origin down to accept traffic only from this CDN resource — otherwise requests can bypass the edge filter and hit your origin directly.</li>

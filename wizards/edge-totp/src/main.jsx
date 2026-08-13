@@ -65,7 +65,6 @@ function Wizard({ session, ctx, filterT, appT }) {
         ticketTtl: '90',
         kvPrefix: 'totp:',
         selfEnroll: 'true',
-        gcoreApiUrl: 'https://api.gcore.com',
         // Branding
         brandMode: 'none',
         brandName: '',
@@ -80,15 +79,17 @@ function Wizard({ session, ctx, filterT, appT }) {
         state: { status: 'idle', plan: null, progress: [], result: null, error: null },
     });
 
-    // Steps: 0 Overview · 1 CDN · 2 Routing · 3 Store · 4 Secrets · 5 Profile
+    // Steps: 0 Overview · 1 Profile · 2 CDN · 3 Routing · 4 Store · 5 Secrets
     //        6 TOTP settings · 7 Branding · 8 Review
     const canAdvance = useMemo(() => {
         switch (step) {
             case 0:
                 return !!f.name.trim();
             case 1:
-                return !!f.cdn;
+                return f.profile === 'A' || (f.profile === 'B' && !!f.proofKey);
             case 2:
+                return !!f.cdn;
+            case 3:
                 return (
                     !!f.audience.trim() &&
                     f.authPrefix.startsWith('/') &&
@@ -96,12 +97,10 @@ function Wizard({ session, ctx, filterT, appT }) {
                     (f.protectionScope === 'all' ||
                         (f.protectionScope === 'paths' && !!f.protectedPaths.trim()))
                 );
-            case 3:
-                return !!f.store;
             case 4:
-                return !!(f.sessionKey && f.handoff && f.enroll && f.gcore);
+                return !!f.store;
             case 5:
-                return f.profile === 'A' || (f.profile === 'B' && !!f.proofKey);
+                return !!(f.sessionKey && f.handoff && f.enroll && f.gcore);
             case 6:
                 return true; // all optional
             case 7:
@@ -140,7 +139,6 @@ function Wizard({ session, ctx, filterT, appT }) {
                       TICKET_TTL: f.ticketTtl,
                       KV_KEY_PREFIX: f.kvPrefix,
                       ALLOW_SELF_ENROLLMENT: f.selfEnroll,
-                      GCORE_API_URL: f.gcoreApiUrl,
                   }
                 : {};
 
@@ -284,6 +282,13 @@ function Wizard({ session, ctx, filterT, appT }) {
                     appT={appT}
                 />
             </WizardStep>
+            <WizardStep title="Profile">
+                <StepProfile
+                    session={session}
+                    f={f}
+                    set={set}
+                />
+            </WizardStep>
             <WizardStep title="CDN resource">
                 <StepCdn
                     session={session}
@@ -306,13 +311,6 @@ function Wizard({ session, ctx, filterT, appT }) {
             </WizardStep>
             <WizardStep title="Secrets">
                 <StepSecrets
-                    session={session}
-                    f={f}
-                    set={set}
-                />
-            </WizardStep>
-            <WizardStep title="Profile">
-                <StepProfile
                     session={session}
                     f={f}
                     set={set}
