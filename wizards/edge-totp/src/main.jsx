@@ -21,6 +21,12 @@ const hostOrigin = new URLSearchParams(location.search).get('hostOrigin') || 'ht
 // the literal path the user typed.
 const escapeRegex = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
+const parseProtectedPaths = (raw) =>
+    raw
+        .split(',')
+        .map((p) => p.trim())
+        .filter((p) => p.length > 1 && p.startsWith('/'));
+
 // ── Wizard root ────────────────────────────────────────────────────────────
 
 function Wizard({ session, ctx, filterT, appT }) {
@@ -95,7 +101,7 @@ function Wizard({ session, ctx, filterT, appT }) {
                     f.authPrefix.startsWith('/') &&
                     f.authPrefix.length > 1 &&
                     (f.protectionScope === 'all' ||
-                        (f.protectionScope === 'paths' && !!f.protectedPaths.trim()))
+                        (f.protectionScope === 'paths' && parseProtectedPaths(f.protectedPaths).length > 0))
                 );
             case 4:
                 return !!f.store;
@@ -201,10 +207,7 @@ function Wizard({ session, ctx, filterT, appT }) {
                           fastedgeFilter: { appRef: 'filter', hook: 'on_request_headers', interruptOnError: true },
                       },
                   ]
-                : f.protectedPaths
-                      .split(',')
-                      .map((p) => p.trim())
-                      .filter(Boolean)
+                : parseProtectedPaths(f.protectedPaths)
                       .map((path, i) => ({
                           ref: `filter-rule-${i}`,
                           name: `${f.name}-mfa-filter-${i + 1}`,

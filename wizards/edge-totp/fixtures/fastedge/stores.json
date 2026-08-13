@@ -1,0 +1,5 @@
+[
+    { "id": 1, "name": "totp-seeds", "comment": "TOTP seed store used by the Challenge-Verify App" },
+    { "id": 2, "name": "rate-limit-store", "comment": "Per-IP request counters for rate limiting" },
+    { "id": 3, "name": "feature-flags", "comment": "Edge-evaluated feature flag overrides" }
+]
