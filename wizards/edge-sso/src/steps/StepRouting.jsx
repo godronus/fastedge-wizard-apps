@@ -5,7 +5,12 @@ export function StepRouting({ f, set }) {
         <>
             <h2 tabIndex={-1}>Routing &amp; session</h2>
             <p className="sso-lede">
-                These values must be <strong>identical</strong> on both apps — the wizard binds them once to both.
+                These fields all describe one thing — the SSO session your visitor gets after
+                signing in: where the auth app lives (auth prefix), which site is allowed to
+                accept that session (audience), where they land if they&apos;re not signed in
+                (login page), and where they&apos;re allowed to be sent back to afterwards
+                (allowed redirect origins). They must be <strong>identical</strong> on both apps —
+                the wizard binds them once to both.
             </p>
             <Field
                 label="Auth path prefix"
@@ -48,7 +53,7 @@ export function StepRouting({ f, set }) {
                 value={f.allowedOrigins}
                 onChange={(v) => set({ allowedOrigins: v })}
                 placeholder="https://shop.example.com,https://admin.example.com"
-                hint="Comma list of absolute origins allowed as ?redirect= targets. Leave blank for relative-only (safe default)."
+                hint="Comma list of absolute origins allowed as ?redirect= targets. Leave blank for relative-only (safe default) — allowing arbitrary origins here lets an attacker craft a login link that sends a signed-in user to a lookalike site (open redirect)."
             />
             <Field
                 label="Login page URL (optional, filter only)"

@@ -54,9 +54,6 @@ export function StepTotpSettings({ f, set }) {
                         </select>
                         <span className="totp-hint">Whether an unenrolled user may self-enroll via /auth/totp/activate.</span>
                     </label>
-                    <Field label="Gcore API URL" value={f.gcoreApiUrl}
-                        onChange={(v) => set({ gcoreApiUrl: v })}
-                        hint="Gcore API base URL. Default: https://api.gcore.com. Override only in non-standard environments." />
                 </WizardPanel>
             </OptionalPanels>
         </>

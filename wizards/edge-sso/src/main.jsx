@@ -20,28 +20,11 @@ const hostOrigin = new URLSearchParams(location.search).get('hostOrigin') || 'ht
 // the literal path the user typed.
 const escapeRegex = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
-const VARIANTS = ['gate-only', 'cookie', 'header'];
-
-// The launch template (737) is an inert placeholder — the six real deployable
-// templates are all companions, split 3 variants × {auth, filter}. Identify each
-// by name substring + api_type, never by hard-coded id (see TARGET.md).
-function classifyTemplates(details) {
-    const byVariant = {};
-    for (const t of details) {
-        const n = t.name.toLowerCase();
-        const variant = VARIANTS.find((v) => n.includes(v));
-        const role = t.api_type === 'wasi-http' ? 'auth' : t.api_type === 'proxy-wasm' ? 'filter' : null;
-        if (!variant || !role) continue;
-        byVariant[variant] = { ...byVariant[variant], [role]: t };
-    }
-    return byVariant;
-}
-
 const emptyProvider = { clientId: '', clientSecret: null, redirectUri: '' };
 
 // ── Wizard root ────────────────────────────────────────────────────────────
 
-function Wizard({ session, byVariant }) {
+function Wizard({ session, authT, filterT }) {
     const [step, setStep] = useState(0);
     const [f, setF] = useState({
         // Core
@@ -83,10 +66,6 @@ function Wizard({ session, byVariant }) {
     const [deploy, setDeploy] = useState({
         state: { status: 'idle', plan: null, progress: [], result: null, error: null },
     });
-
-    const pair = f.variant ? byVariant[f.variant] : null;
-    const authT = pair?.auth;
-    const filterT = pair?.filter;
 
     function hasProviderConfig(key) {
         const p = f.providers[key];
@@ -163,6 +142,7 @@ function Wizard({ session, byVariant }) {
     async function handleFinish() {
         const sharedEnv = {
             AUTH_PREFIX: f.authPrefix,
+            SSO_VARIANT: f.variant,
             SSO_AUDIENCE: f.audience,
             SESSION_COOKIE: f.cookie,
             ...(f.issuer ? { SSO_ISSUER: f.issuer } : {}),
@@ -321,29 +301,24 @@ function App() {
                     });
                     return;
                 }
-                // The launch template (737) is an inert placeholder — only the
-                // companions carry real params. Never read the launch template itself.
-                if (ctx.companionTemplateIds.length !== 6) {
+                // One auth-app + one cdn-filter pair, identical across all three
+                // variants — SSO_VARIANT (set by StepVariant) selects gate-only/
+                // cookie/header behavior at runtime, so there's only one template
+                // per role. Identify each by api_type, never by hard-coded id.
+                const ids = [ctx.launchTemplateId, ...ctx.companionTemplateIds];
+                const details = await Promise.all(ids.map((id) => session.fastedge.templates.read({ id })));
+                const filterT = details.find((t) => t.api_type === 'proxy-wasm');
+                const authT = details.find((t) => t.api_type === 'wasi-http');
+
+                if (!filterT || !authT) {
                     session?.dispose();
                     setState({
                         status: 'error',
-                        error: `Expected 6 companion templates (3 variants × 2 apps), got ${ctx.companionTemplateIds.length}. Check the wizard's template wiring.`,
+                        error: 'Expected one proxy-wasm filter and one wasi-http auth app. Check companion templates.',
                     });
                     return;
                 }
-                const details = await Promise.all(
-                    ctx.companionTemplateIds.map((id) => session.fastedge.templates.read({ id })),
-                );
-                const byVariant = classifyTemplates(details);
-                if (VARIANTS.some((v) => !byVariant[v]?.auth || !byVariant[v]?.filter)) {
-                    session?.dispose();
-                    setState({
-                        status: 'error',
-                        error: 'Could not identify an auth-app + cdn-filter pair for every variant (gate-only/cookie/header). Check companion template names.',
-                    });
-                    return;
-                }
-                setState({ status: 'ready', session, ctx, byVariant });
+                setState({ status: 'ready', session, ctx, authT, filterT });
             } catch (err) {
                 setState({ status: 'error', error: `${err.code ?? 'error'}: ${err.message}` });
             } finally {
@@ -357,7 +332,7 @@ function App() {
 
     if (state.status === 'connecting') return <p>Connecting…</p>;
     if (state.status === 'error') return <p className="wizard-error">{state.error}</p>;
-    return <Wizard session={state.session} byVariant={state.byVariant} />;
+    return <Wizard session={state.session} authT={state.authT} filterT={state.filterT} />;
 }
 
 createRoot(document.getElementById('root')).render(<App />);

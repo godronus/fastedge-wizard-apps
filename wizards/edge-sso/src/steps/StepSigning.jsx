@@ -42,9 +42,15 @@ export function StepSigning({ session, f, set }) {
         <>
             <h2 tabIndex={-1}>Session signing</h2>
             <p className="sso-lede">
-                {f.variant === 'cookie'
-                    ? 'The cookie variant signs the session token asymmetrically (ES256), so your origin never holds a forge-capable secret.'
-                    : 'The session token is signed with a shared secret (HS256) — the same value is bound to both apps.'}
+                This is what stops a visitor from forging their own "I'm signed in" session. Based
+                on the <strong>{f.variant || '(no variant selected)'}</strong> variant you picked
+                earlier: {f.variant === 'cookie'
+                    ? <>your origin needs to verify the session cookie itself, so it can only hold
+                        a <strong>public</strong> key (ES256, asymmetric) — a private key never
+                        leaves this app.</>
+                    : <>only the edge filter ever checks the session, so a single{' '}
+                        <strong>shared secret</strong> (HS256, symmetric) both apps hold is
+                        enough — nothing needs to be publishable.</>}
             </p>
             <ResourceRow title="Session secret"
                 sub={f.variant === 'cookie'

@@ -38,7 +38,7 @@ pnpm run dev:watch    # esbuild --watch in a second terminal (no host restart)
 
 ## Steps
 
-`Overview → CDN resource → Routing & tokens → Edge Storage → Secrets → Profile → TOTP settings → Branding → Review`, then a deploy-progress screen. Steps 6–8 are conditional (custom TOTP/branding panels; Profile B adds an MFA-proof key).
+`Overview → Profile → CDN resource → Routing & tokens → Edge Storage → Secrets → TOTP settings → Branding → Review`, then a deploy-progress screen. Steps 6–8 are conditional (custom TOTP/branding panels; Profile B adds an MFA-proof key).
 
 ## Resources it creates (the interesting part)
 
@@ -47,7 +47,7 @@ pnpm run dev:watch    # esbuild --watch in a second terminal (no host restart)
 | Session / handoff / enroll keys | `secrets.pickOrCreate({ name, bytes: 32 })` | `bytes` arms the create-inline Generate button; the same picker lets a re-run reuse a key a prior run created |
 | Gcore API token | `secrets.pickOrCreate()` | user brings it (Edge Storage write access) — pick existing or paste |
 | MFA-proof key (Profile B only) | `secrets.generateKeypair({ algorithm: 'ES256' })` | public JWK → app env `MFA_PROOF_PUBLIC_JWK`; private half is a secret ref |
-| Edge Storage (TOTP seeds) | `stores.pickOrCreate()` | id/name injected into app `env` (`KV_STORE_ID` / `KV_STORE_NAME`) — created **before** the plan |
+| Edge Storage (TOTP seeds) | `stores.pickOrCreate()` | id bound to app `storeRefs` (`TOTP_USER_SEEDS`, the read binding) and to app `env` (`KV_STORE_ID`, for the `/enroll` write path) — created **before** the plan |
 | CDN resource | `cdn.resources.pick()` | the delivery domain to wire onto |
 
 Everything above is created **eagerly** and referenced by id in the plan. The plan itself (`session.deployment.deploy(planParams, { onPlan, onProgress })`) creates the two apps + shared env, one `newCdnOrigins` (app origin), and two `newCdnRules`:

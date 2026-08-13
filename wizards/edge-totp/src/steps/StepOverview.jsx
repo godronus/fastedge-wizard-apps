@@ -22,10 +22,11 @@ export function StepOverview({ f, set, filterT, appT }) {
                 </ul>
             </Note>
             <Note kind="warn">
-                Both apps must share one CDN host so the <code>mfa_session</code> cookie is
-                first-party. The filter <strong>fail-closes</strong>: if the shared audience is
-                missing it rejects every request. This wizard keeps the shared values in sync
-                for you.
+                Both apps must share one CDN host so the <code>mfa_session</code> cookie —
+                the proof a visitor already passed MFA — is first-party. The filter
+                <strong> fail-closes</strong>: get the shared audience value wrong or leave it
+                blank, and every visitor is blocked, not let through. This wizard keeps the
+                shared values in sync for you.
             </Note>
             <Field label="Deployment name" value={f.name} onChange={(v) => set({ name: v })}
                 hint="Used to name the two apps, the origin, and the CDN rules (e.g. totp-app, totp-filter)." />
