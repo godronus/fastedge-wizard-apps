@@ -83,12 +83,18 @@ export function StepProviders({ session, f, set }) {
                         placeholder={`https://<host>${f.authPrefix}/callback/facebook`} />
                 </WizardPanel>
                 <WizardPanel value="saml" label="SAML">
+                    <p>SAML is an older, XML-based SSO protocol common with enterprise identity
+                        providers (Okta, Azure AD, ADFS, OneLogin) that don&apos;t offer OAuth.
+                        There&apos;s no client ID/secret pair — instead your IdP and this
+                        deployment (the &quot;service provider,&quot; or SP) each have an{' '}
+                        <strong>entity ID</strong> (a stable identifier, not a secret) and a couple
+                        of fixed URLs, exchanged once with your IdP admin when you set this up.</p>
                     <Field label="IdP SSO URL" value={p.saml.idpSsoUrl}
                         onChange={(v) => setP('saml', { idpSsoUrl: v })}
-                        hint="The endpoint that receives AuthnRequests." />
+                        hint="Where your IdP sends users to sign in — get this from your IdP admin console." />
                     <Field label="IdP entity ID" value={p.saml.idpEntityId}
                         onChange={(v) => setP('saml', { idpEntityId: v })}
-                        hint="Must exactly match the Issuer element in signed assertions." />
+                        hint="Your IdP's own identifier. Must exactly match the Issuer field in the signed responses it sends back — a mismatch here is the most common SAML setup failure." />
                     <ResourceRow title="IdP signing certificate" value={p.saml.idpCert?.name}
                         set={!!p.saml.idpCert} onClear={() => setP('saml', { idpCert: null })}>
                         <button onClick={pickSecret('saml', 'idpCert', `${f.name}-saml-cert`, 'SAML IdP signing certificate', 'IdP signing certificate')}
@@ -96,11 +102,11 @@ export function StepProviders({ session, f, set }) {
                     </ResourceRow>
                     <Field label="SP entity ID (optional)" value={p.saml.spEntityId}
                         onChange={(v) => setP('saml', { spEntityId: v })}
-                        hint="This service provider's entityID. Register it with your IdP." />
+                        hint="This deployment's own identifier — you choose it, then register it with your IdP so it knows who's asking." />
                     <Field label="SP ACS URL (optional)" value={p.saml.spAcsUrl}
                         onChange={(v) => setP('saml', { spAcsUrl: v })}
                         placeholder={`https://<host>${f.authPrefix}/callback`}
-                        hint="Assertion Consumer Service URL. Register it with your IdP." />
+                        hint="The callback URL your IdP sends the signed sign-in response to. Register it with your IdP — the default above is almost always correct." />
                     <Field label="Button label" value={p.saml.idpLabel}
                         onChange={(v) => setP('saml', { idpLabel: v })}
                         hint='Text shown on the SAML login button. Default: "SSO"' />
