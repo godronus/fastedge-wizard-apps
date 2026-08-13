@@ -127,7 +127,7 @@ Run `/sync-wizard-fixtures` (Claude Code skill) from your wizard directory with
 that file and read every param:
 
 - Which params have `"data_type": "secret"` or `"data_type": "store"`? Note: params
-  that hold a KV store id or name are often typed `"string"` (e.g. `KV_STORE_ID`,
+  that hold an Edge Storage id or name are often typed `"string"` (e.g. `KV_STORE_ID`,
   `KV_STORE_NAME`) — treat them the same as `"store"` typed params (see below).
 - Which are `"mandatory": false` but referenced in the template's README as required for a specific mode?
 - Are there params that must match across multiple apps? (See `context/PARAM_CONSTRAINTS.md`.)
@@ -138,7 +138,7 @@ templates selected. Params marked `shared_across_apps` in their `metadata` must
 carry the same value on every app — the wizard collects them once and binds
 everywhere.
 
-**KV store binding pattern** — if an app needs a store id or name in its env:
+**Edge Storage binding pattern** — if an app needs a store id or name in its env:
 
 1. Call `session.fastedge.stores.pickOrCreate()` (user selects an existing store or creates one inline) **before** `deployment.plan()`
 2. Inject the returned `{ id, name }` directly into the app's `env` in the plan
@@ -303,7 +303,8 @@ Both must pass before merge.
 CI builds all wizards and force-pushes built output to the `gh-pages` branch. jsDelivr picks it up within minutes (CI purges the cache after publish).
 
 The wizard is not yet live in the portal. The Gcore team then:
-1. Creates a FastEdge template with `WIZARD_SOURCE_CONFIG` pointing to the new wizard
+1. Runs `/wizard-publish` to set `WIZARD_SOURCE_CONFIG` (and `companionTemplateIds`,
+   for a multi-app wizard) on the launch FastEdge template via the Gcore API
 2. Verifies it against a real portal environment
 
 Once the template is published, the wizard is live.

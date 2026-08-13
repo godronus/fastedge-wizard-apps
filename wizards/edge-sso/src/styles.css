@@ -7,30 +7,30 @@
    Colours must use var(--gc-*) tokens; raw colour literals fail the CI lint
    gate. Non-colour literals (sizes, lengths like 60ch/1rem) are fine. */
 
-.totp-lede {
+.sso-lede {
     color: var(--gc-wizard-text-muted);
     max-width: 60ch;
 }
 
 /* Stacked form field: label above control. */
-.totp-field {
+.sso-field {
     display: block;
     margin-bottom: 1rem;
     max-width: 60ch;
 }
 
-.totp-field > span {
+.sso-field > span {
     display: block;
     font-weight: 500;
     margin-bottom: 0.25rem;
 }
 
-.totp-field input,
-.totp-field select {
+.sso-field input,
+.sso-field select {
     width: 100%;
 }
 
-.totp-hint {
+.sso-hint {
     display: block;
     color: var(--gc-wizard-text-muted);
     font-size: 0.8125rem;
@@ -38,7 +38,7 @@
 }
 
 /* Callout boxes for guidance / fail-closed warnings. */
-.totp-note {
+.sso-note {
     border: 1px solid var(--gc-wizard-border);
     border-left-width: 4px;
     border-radius: var(--gc-wizard-radius);
@@ -48,33 +48,33 @@
     font-size: 0.875rem;
 }
 
-.totp-note--warn { border-left-color: var(--gc-wizard-warning); }
+.sso-note--warn { border-left-color: var(--gc-wizard-warning); }
 
-.totp-note--info { border-left-color: var(--gc-wizard-info); }
+.sso-note--info { border-left-color: var(--gc-wizard-info); }
 
-.totp-note--danger { border-left-color: var(--gc-wizard-danger); }
+.sso-note--danger { border-left-color: var(--gc-wizard-danger); }
 
-/* Resource / picker rows now come from the step-kit (`.wizard-row*`,
-   imported via @gcore/wizard-step-kit/styles at the top of this file). */
+/* Resource / picker rows come from the step-kit (`.wizard-row*`, imported
+   via @gcore/wizard-step-kit/styles at the top of this file). */
 
 /* Review summary key/value list. */
-.totp-summary {
+.sso-summary {
     border: 1px solid var(--gc-wizard-border);
     border-radius: var(--gc-wizard-radius);
     padding: 0.5rem 1rem;
     margin: 0.75rem 0;
 }
 
-.totp-summary dt {
+.sso-summary dt {
     font-weight: 600;
     margin-top: 0.5rem;
 }
 
-.totp-summary dd {
+.sso-summary dd {
     margin: 0 0 0.25rem;
     color: var(--gc-wizard-text-muted);
     overflow-wrap: break-word;
 }
 
-/* Deploy plan/progress/result rendering now comes from the step-kit
+/* Deploy plan/progress/result rendering comes from the step-kit
    (`.wizard-deploy*` via <gc-deploy-progress> / <DeployProgress>). */

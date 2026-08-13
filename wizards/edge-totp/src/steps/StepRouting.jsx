@@ -1,3 +1,4 @@
+import { OptionalPanels, WizardPanel } from '@gcore/wizard-step-kit/react';
 import { Note, Field } from '../components.jsx';
 
 export function StepRouting({ f, set }) {
@@ -13,6 +14,31 @@ export function StepRouting({ f, set }) {
                 onChange={(v) => set({ authPrefix: v })}
                 hint="Where the challenge/verify app is mounted. The CDN path rule and the filter bypass both use this. Default: /auth/totp"
             />
+            <h3>Protection scope</h3>
+            <p className="totp-lede">
+                Which paths on this CDN resource require MFA. The filter always bypasses the auth
+                prefix above and <code>/health</code>, whichever scope you choose.
+            </p>
+            <OptionalPanels onChange={(sel) => set({ protectionScope: sel[0] || '' })}>
+                <WizardPanel value="all" label="Protect the entire site">
+                    <p>Every path on this CDN resource requires a valid <code>mfa_session</code>. Choose
+                        this only if the whole site sits behind MFA.</p>
+                </WizardPanel>
+                <WizardPanel value="paths" label="Protect specific paths">
+                    <p>Only the paths listed below require MFA — everything else on this CDN resource
+                        is unaffected.</p>
+                    <Field
+                        label="Protected paths"
+                        value={f.protectedPaths}
+                        onChange={(v) => set({ protectedPaths: v })}
+                        placeholder="/checkout, /account"
+                        hint="Comma-separated path prefixes, e.g. /checkout, /account. Each becomes its own CDN rule."
+                    />
+                </WizardPanel>
+            </OptionalPanels>
+            {!f.protectionScope && (
+                <Note kind="danger">Choose a protection scope before continuing — there is no default.</Note>
+            )}
             <Field
                 label="MFA audience (required)"
                 value={f.audience}
@@ -41,8 +67,17 @@ export function StepRouting({ f, set }) {
                 value={f.loginUrl}
                 onChange={(v) => set({ loginUrl: v })}
                 placeholder="https://app.example.com/login/mfa"
-                hint="Where the filter redirects unauthenticated users. Blank → the filter returns 401 instead (useful for APIs)."
+                hint="A page on YOUR origin that starts the challenge — not the totp-app URL itself. Leave
+                    blank only if every protected path is an API a browser never hits directly."
             />
+            {!f.loginUrl && (
+                <Note kind="danger">
+                    <strong>No Login URL set:</strong> anyone hitting a protected path without a
+                    session will see a bare <code>401 &quot;MFA required&quot;</code> response, not a
+                    challenge screen. For a checkout page, account area, or anything a person opens in
+                    a browser, this is almost never what you want — set this before deploying.
+                </Note>
+            )}
         </>
     );
 }

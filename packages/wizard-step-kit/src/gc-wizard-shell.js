@@ -8,21 +8,31 @@
  *   </gc-wizard-shell>
  *
  * Events (all bubble):
- *   navigate  — cancelable; detail: { from, to, reason: 'next'|'back'|'goto' }
- *   navigated — settled;    detail: { from, to }
- *   finish    — last step Next clicked
- *   cancel    — Cancel clicked
+ *   navigate       — cancelable; detail: { from, to, reason: 'next'|'back'|'goto' }
+ *   navigated      — settled;    detail: { from, to }
+ *   finish         — last step Next clicked
+ *   wizard-finished — Finished button clicked (only reachable once `finished` is set)
  *
  * Attributes:
  *   can-advance      (boolean) — enables the Next/Finish button
+ *   finished         (boolean) — once set, Back is hidden and Next becomes a single "Finished"
+ *                                button that dispatches `wizard-finished` instead of navigating
  *   error            (string)  — validation message shown above nav
  *   label-back       (string, default "Back")
  *   label-next       (string, default "Next")
- *   label-cancel     (string, default "Cancel")
  *   label-finish     (string, default "Finish")
+ *   label-finished   (string, default "Finished")
  */
 class GcWizardShell extends HTMLElement {
-    static observedAttributes = ['can-advance', 'error', 'label-back', 'label-next', 'label-cancel', 'label-finish'];
+    static observedAttributes = [
+        'can-advance',
+        'finished',
+        'error',
+        'label-back',
+        'label-next',
+        'label-finish',
+        'label-finished',
+    ];
 
     #current = 0;
     #highWaterMark = 0;
@@ -31,7 +41,6 @@ class GcWizardShell extends HTMLElement {
     #navDiv = null;
     #btnBack = null;
     #btnNext = null;
-    #btnCancel = null;
     #mo = null;
 
     connectedCallback() {
@@ -45,6 +54,7 @@ class GcWizardShell extends HTMLElement {
     attributeChangedCallback(name) {
         if (!this.#navDiv) return;
         if (name === 'can-advance') this.#updateNext();
+        else if (name === 'finished') { this.#updateNext(); this.#updateNavVisibility(); }
         else if (name === 'error') this.#updateError();
         else this.#updateLabels();
     }
@@ -63,19 +73,21 @@ class GcWizardShell extends HTMLElement {
         this.#errorDiv.setAttribute('role', 'alert');
         this.#errorDiv.hidden = true;
 
-        this.#btnCancel = this.#mkBtn('wizard-btn-cancel', this.getAttribute('label-cancel') || 'Cancel');
         this.#btnBack   = this.#mkBtn('wizard-btn-back',   this.getAttribute('label-back')   || 'Back');
         this.#btnNext   = this.#mkBtn('wizard-btn-next',   this.getAttribute('label-next')   || 'Next');
 
-        this.#btnCancel.addEventListener('click', () =>
-            this.dispatchEvent(new CustomEvent('cancel', { bubbles: true }))
-        );
         this.#btnBack.addEventListener('click', () => this.#go(this.#current - 1, 'back'));
-        this.#btnNext.addEventListener('click', () => this.#go(this.#current + 1, 'next'));
+        this.#btnNext.addEventListener('click', () => {
+            if (this.hasAttribute('finished')) {
+                this.dispatchEvent(new CustomEvent('wizard-finished', { bubbles: true }));
+                return;
+            }
+            this.#go(this.#current + 1, 'next');
+        });
 
         this.#navDiv = document.createElement('div');
         this.#navDiv.className = 'wizard-nav';
-        this.#navDiv.append(this.#btnCancel, this.#btnBack, this.#btnNext);
+        this.#navDiv.append(this.#btnBack, this.#btnNext);
 
         this.prepend(this.#indicator, this.#errorDiv);
         this.append(this.#navDiv);
@@ -106,6 +118,10 @@ class GcWizardShell extends HTMLElement {
             btn.className = 'wizard-step-btn';
             if (i === this.#current) btn.setAttribute('aria-current', 'step');
             if (i < this.#highWaterMark && i !== this.#current) btn.classList.add('wizard-step--complete');
+            // Beyond the high-water mark isn't reachable yet — only Next (gated by can-advance)
+            // extends the mark, so jumping ahead here would bypass per-step validation entirely.
+            btn.disabled = i > this.#highWaterMark;
+            btn.setAttribute('aria-disabled', String(i > this.#highWaterMark));
             btn.textContent = step.getAttribute('title') || `Step ${i + 1}`;
             btn.addEventListener('click', () => this.#go(i, 'goto'));
             this.#indicator.append(btn);
@@ -124,6 +140,8 @@ class GcWizardShell extends HTMLElement {
             if (i === index) btn.setAttribute('aria-current', 'step');
             else btn.removeAttribute('aria-current');
             btn.classList.toggle('wizard-step--complete', i < this.#highWaterMark && i !== index);
+            btn.disabled = i > this.#highWaterMark;
+            btn.setAttribute('aria-disabled', String(i > this.#highWaterMark));
         });
 
         this.#updateNavVisibility();
@@ -151,6 +169,10 @@ class GcWizardShell extends HTMLElement {
 
         if (to < 0 || to >= steps.length) return;
 
+        // goto (stepper-indicator click) can only revisit an already-reached step — only
+        // Next (gated by can-advance) may extend the high-water mark forward.
+        if (reason === 'goto' && to > this.#highWaterMark) return;
+
         const ev = new CustomEvent('navigate', {
             bubbles: true,
             cancelable: true,
@@ -171,12 +193,15 @@ class GcWizardShell extends HTMLElement {
         if (!this.#btnNext) return;
         const steps = this.#steps();
         const isLast = this.#current === steps.length - 1;
-        const canAdvance = this.hasAttribute('can-advance');
-        this.#btnNext.textContent = isLast
-            ? (this.getAttribute('label-finish') || 'Finish')
-            : (this.getAttribute('label-next')   || 'Next');
-        this.#btnNext.disabled = !canAdvance;
-        this.#btnNext.setAttribute('aria-disabled', String(!canAdvance));
+        const finished = this.hasAttribute('finished');
+        this.#btnNext.textContent = finished
+            ? (this.getAttribute('label-finished') || 'Finished')
+            : isLast
+                ? (this.getAttribute('label-finish') || 'Finish')
+                : (this.getAttribute('label-next')   || 'Next');
+        const disabled = finished ? false : !this.hasAttribute('can-advance');
+        this.#btnNext.disabled = disabled;
+        this.#btnNext.setAttribute('aria-disabled', String(disabled));
     }
 
     #updateError() {
@@ -188,14 +213,13 @@ class GcWizardShell extends HTMLElement {
 
     #updateLabels() {
         if (!this.#btnBack) return;
-        this.#btnBack.textContent   = this.getAttribute('label-back')   || 'Back';
-        this.#btnCancel.textContent = this.getAttribute('label-cancel') || 'Cancel';
+        this.#btnBack.textContent = this.getAttribute('label-back') || 'Back';
         this.#updateNext();
     }
 
     #updateNavVisibility() {
         if (!this.#btnBack) return;
-        this.#btnBack.hidden = this.#current === 0;
+        this.#btnBack.hidden = this.#current === 0 || this.hasAttribute('finished');
     }
 }
 

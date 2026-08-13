@@ -35,6 +35,10 @@ function Wizard({ session, ctx, filterT, appT }) {
         cookie: 'mfa_session',
         issuer: '',
         loginUrl: '',
+        // Protection scope — no default: forces an explicit choice instead of silently
+        // protecting the entire CDN resource.
+        protectionScope: '',
+        protectedPaths: '',
         // KV store
         store: null,
         // Secrets
@@ -85,7 +89,13 @@ function Wizard({ session, ctx, filterT, appT }) {
             case 1:
                 return !!f.cdn;
             case 2:
-                return !!f.audience.trim() && f.authPrefix.startsWith('/') && f.authPrefix.length > 1;
+                return (
+                    !!f.audience.trim() &&
+                    f.authPrefix.startsWith('/') &&
+                    f.authPrefix.length > 1 &&
+                    (f.protectionScope === 'all' ||
+                        (f.protectionScope === 'paths' && !!f.protectedPaths.trim()))
+                );
             case 3:
                 return !!f.store;
             case 4:
@@ -154,8 +164,10 @@ function Wizard({ session, ctx, filterT, appT }) {
                 : {};
 
         const appEnv = {
+            // Read access to the seed store comes from storeRefs below (the platform-level
+            // binding KvStore.open("TOTP_USER_SEEDS") needs) — KV_STORE_ID here is only for
+            // the write-via-API path, which the fastedge::kv binding can't do.
             KV_STORE_ID: String(f.store.id),
-            KV_STORE_NAME: f.store.name,
             ...(f.profile === 'B' ? { MFA_PROOF_PUBLIC_JWK: f.proofKey.publicKey } : {}),
             ...totpEnv,
             ...policyEnv,
@@ -170,6 +182,38 @@ function Wizard({ session, ctx, filterT, appT }) {
             GCORE_API_TOKEN: f.gcore.id,
             ...(f.profile === 'B' ? { MFA_PROOF_SIGNING_KEY: f.proofKey.id } : {}),
         };
+
+        // Grants the app's fastedge::kv binding access to the selected store, under the
+        // fixed param name the template declares (registry.json TOTP_USER_SEEDS, data_type
+        // "store"). Env vars alone never do this — see wizard-sdk docs/quickstart.md.
+        const appStoreRefs = { TOTP_USER_SEEDS: f.store.id };
+
+        // Protection scope: either one catch-all rule, or one rule per protected path prefix.
+        // Every rule binds the same filter app — the filter self-bypasses AUTH_PREFIX + /health
+        // internally regardless of which CDN rule(s) route to it.
+        const filterRules =
+            f.protectionScope === 'all'
+                ? [
+                      {
+                          // Match every path (the CDN API rejects a rule of only slashes, so not '^/').
+                          ref: 'filter-rule',
+                          name: `${f.name}-mfa-filter`,
+                          rule: '^/.*',
+                          weight: 1,
+                          fastedgeFilter: { appRef: 'filter', hook: 'on_request_headers', interruptOnError: true },
+                      },
+                  ]
+                : f.protectedPaths
+                      .split(',')
+                      .map((p) => p.trim())
+                      .filter(Boolean)
+                      .map((path, i) => ({
+                          ref: `filter-rule-${i}`,
+                          name: `${f.name}-mfa-filter-${i + 1}`,
+                          rule: `^${escapeRegex(path)}`,
+                          weight: 1,
+                          fastedgeFilter: { appRef: 'filter', hook: 'on_request_headers', interruptOnError: true },
+                      }));
 
         const planParams = {
             fastedgeApps: [
@@ -188,6 +232,7 @@ function Wizard({ session, ctx, filterT, appT }) {
                     source: { fromTemplateId: appT.id },
                     env: appEnv,
                     secretRefs: appSecrets,
+                    storeRefs: appStoreRefs,
                 },
             ],
             sharedEnv,
@@ -202,16 +247,7 @@ function Wizard({ session, ctx, filterT, appT }) {
                     weight: 10,
                     originGroupRef: 'app-origin',
                 },
-                // Enforce the filter on everything else (it self-bypasses AUTH_PREFIX + /health).
-                {
-                    // Match every path (the CDN API rejects a rule of only slashes, so not '^/').
-                    // The filter self-bypasses AUTH_PREFIX + /health internally.
-                    ref: 'filter-rule',
-                    name: `${f.name}-mfa-filter`,
-                    rule: '^/.*',
-                    weight: 1,
-                    fastedgeFilter: { appRef: 'filter', hook: 'on_request_headers', interruptOnError: true },
-                },
+                ...filterRules,
             ],
         };
 
@@ -234,10 +270,11 @@ function Wizard({ session, ctx, filterT, appT }) {
     return (
         <WizardShell
             canAdvance={canAdvance}
-            labels={{ finish: 'Deploy' }}
+            finished={deploy.state.status === 'done'}
+            labels={{ finish: 'Deploy', finished: 'Finished' }}
             onNavigated={(e) => setStep(e.detail.to)}
             onFinish={handleFinish}
-            onCancel={() => session.dispose()}
+            onWizardFinished={() => session.wizard.finish()}
         >
             <WizardStep title="Overview">
                 <StepOverview
@@ -260,7 +297,7 @@ function Wizard({ session, ctx, filterT, appT }) {
                     set={set}
                 />
             </WizardStep>
-            <WizardStep title="KV store">
+            <WizardStep title="Edge Storage">
                 <StepStore
                     session={session}
                     f={f}
@@ -318,6 +355,7 @@ function App() {
                 const ctx = await session.context.get();
 
                 if (ctx.launchTemplateId === null) {
+                    session?.dispose();
                     setState({
                         status: 'error',
                         error: 'Opened in re-entry mode — launch from the TOTP template to deploy.',
@@ -331,6 +369,7 @@ function App() {
                 const appT = details.find((t) => t.api_type === 'wasi-http');
 
                 if (!filterT || !appT) {
+                    session?.dispose();
                     setState({
                         status: 'error',
                         error: 'Expected one proxy-wasm filter and one wasi-http app. Check companion templates.',

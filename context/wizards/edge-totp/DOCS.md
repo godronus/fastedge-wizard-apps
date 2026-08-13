@@ -7,7 +7,7 @@ The canonical real wizard: it sets up TOTP-based multi-factor authentication enf
 - **`app`** (`wasi-http`) — the login / challenge / enrollment flow the user hits at the auth prefix.
 - **`filter`** (`proxy-wasm`) — a CDN filter that verifies the `mfa_session` cookie on every protected request and redirects to the login flow when it's missing/invalid (it self-bypasses the auth prefix + `/health`).
 
-It's the reference example for multi-app deploy, CDN origin+rule wiring, shared secrets, KV-store binding, keypair generation, and Profile A/B branching.
+It's the reference example for multi-app deploy, CDN origin+rule wiring, shared secrets, Edge Storage binding, keypair generation, and Profile A/B branching.
 
 ## Tech stack
 
@@ -38,16 +38,16 @@ pnpm run dev:watch    # esbuild --watch in a second terminal (no host restart)
 
 ## Steps
 
-`Overview → CDN resource → Routing & tokens → KV store → Secrets → Profile → TOTP settings → Branding → Review`, then a deploy-progress screen. Steps 6–8 are conditional (custom TOTP/branding panels; Profile B adds an MFA-proof key).
+`Overview → CDN resource → Routing & tokens → Edge Storage → Secrets → Profile → TOTP settings → Branding → Review`, then a deploy-progress screen. Steps 6–8 are conditional (custom TOTP/branding panels; Profile B adds an MFA-proof key).
 
 ## Resources it creates (the interesting part)
 
 | Resource | SDK call | Notes |
 |---|---|---|
 | Session / handoff / enroll keys | `secrets.pickOrCreate({ name, bytes: 32 })` | `bytes` arms the create-inline Generate button; the same picker lets a re-run reuse a key a prior run created |
-| Gcore API token | `secrets.pickOrCreate()` | user brings it (KV write access) — pick existing or paste |
+| Gcore API token | `secrets.pickOrCreate()` | user brings it (Edge Storage write access) — pick existing or paste |
 | MFA-proof key (Profile B only) | `secrets.generateKeypair({ algorithm: 'ES256' })` | public JWK → app env `MFA_PROOF_PUBLIC_JWK`; private half is a secret ref |
-| KV store (TOTP seeds) | `stores.pickOrCreate()` | id/name injected into app `env` (`KV_STORE_ID` / `KV_STORE_NAME`) — created **before** the plan |
+| Edge Storage (TOTP seeds) | `stores.pickOrCreate()` | id/name injected into app `env` (`KV_STORE_ID` / `KV_STORE_NAME`) — created **before** the plan |
 | CDN resource | `cdn.resources.pick()` | the delivery domain to wire onto |
 
 Everything above is created **eagerly** and referenced by id in the plan. The plan itself (`session.deployment.deploy(planParams, { onPlan, onProgress })`) creates the two apps + shared env, one `newCdnOrigins` (app origin), and two `newCdnRules`:

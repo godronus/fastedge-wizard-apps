@@ -10,8 +10,12 @@
  *   </gc-resource-row>
  *
  * Attributes:
- *   title        (string)  — row title
+ *   title        (string)  — row title (fixed purpose label — never overwrite with a picked
+ *                            resource's name; that goes in `value` instead)
  *   sub          (string)  — secondary line under the title
+ *   value        (string)  — resolved resource's own name once set (e.g. the picked secret's
+ *                            name); rendered as a third, truncating line — never in the badge,
+ *                            which is fixed-width and would overflow on narrow screens
  *   set          (boolean) — resource is set → badge reads label-set, styled "success"
  *   clearable    (boolean) — show a clear (×) button in the badge while set
  *   label-set    (string, default "set")
@@ -27,11 +31,14 @@
  * framework keeps DOM ownership. ("Host owns truth, element owns choreography".)
  */
 class GcResourceRow extends HTMLElement {
-    static observedAttributes = ['title', 'sub', 'set', 'clearable', 'label-set', 'label-unset', 'label-clear'];
+    static observedAttributes = [
+        'title', 'sub', 'value', 'set', 'clearable', 'label-set', 'label-unset', 'label-clear',
+    ];
 
     #main = null;
     #titleEl = null;
     #subEl = null;
+    #valueEl = null;
     #badge = null;
 
     connectedCallback() {
@@ -53,7 +60,9 @@ class GcResourceRow extends HTMLElement {
         this.#titleEl.className = 'wizard-row-title';
         this.#subEl = document.createElement('div');
         this.#subEl.className = 'wizard-row-sub';
-        this.#main.append(this.#titleEl, this.#subEl);
+        this.#valueEl = document.createElement('div');
+        this.#valueEl.className = 'wizard-row-value';
+        this.#main.append(this.#titleEl, this.#subEl, this.#valueEl);
 
         // Right: element-owned status badge, appended after the host's actions.
         this.#badge = document.createElement('span');
@@ -69,6 +78,11 @@ class GcResourceRow extends HTMLElement {
         const sub = this.getAttribute('sub');
         this.#subEl.textContent = sub || '';
         this.#subEl.hidden = !sub;
+
+        const value = this.getAttribute('value');
+        this.#valueEl.textContent = value || '';
+        this.#valueEl.hidden = !value;
+        if (value) this.#valueEl.title = value; else this.#valueEl.removeAttribute('title');
 
         const isSet = this.hasAttribute('set');
         this.#badge.classList.toggle('wizard-row-badge--set', isSet);
