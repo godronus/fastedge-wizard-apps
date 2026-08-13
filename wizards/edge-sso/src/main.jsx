@@ -20,6 +20,12 @@ const hostOrigin = new URLSearchParams(location.search).get('hostOrigin') || 'ht
 // the literal path the user typed.
 const escapeRegex = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
+const parseProtectedPaths = (raw) =>
+    raw
+        .split(',')
+        .map((p) => p.trim())
+        .filter((p) => p.length > 1 && p.startsWith('/'));
+
 const emptyProvider = { clientId: '', clientSecret: null, redirectUri: '' };
 
 // ── Wizard root ────────────────────────────────────────────────────────────
@@ -36,12 +42,17 @@ function Wizard({ session, authT, filterT }) {
         audience: '',
         cookie: 'sso_session',
         issuer: '',
+        // Protection scope — no default: forces an explicit choice instead of silently
+        // protecting the entire CDN resource.
+        protectionScope: '',
+        protectedPaths: '',
         canonicalHost: '',
         allowedOrigins: '',
         loginUrl: '',
         // Session signing
         sessionSecret: null,
         signingKey: null,
+        claims: ['email', 'name'],
         // Providers
         selectedProviders: [],
         providers: {
@@ -84,7 +95,13 @@ function Wizard({ session, authT, filterT }) {
             case 2:
                 return !!f.cdn;
             case 3:
-                return !!f.audience.trim() && f.authPrefix.startsWith('/') && f.authPrefix.length > 1;
+                return (
+                    !!f.audience.trim() &&
+                    f.authPrefix.startsWith('/') &&
+                    f.authPrefix.length > 1 &&
+                    (f.protectionScope === 'all' ||
+                        (f.protectionScope === 'paths' && parseProtectedPaths(f.protectedPaths).length > 0))
+                );
             case 4:
                 return !!f.sessionSecret && (f.variant !== 'cookie' || !!f.signingKey);
             case 5:
@@ -169,6 +186,7 @@ function Wizard({ session, authT, filterT }) {
             ...(f.canonicalHost ? { CANONICAL_HOST: f.canonicalHost } : {}),
             ...(f.allowedOrigins ? { SSO_ALLOWED_ORIGINS: f.allowedOrigins } : {}),
             ...(isCookie ? { SESSION_PUBLIC_JWK: f.signingKey.publicKey } : {}),
+            ...(f.claims.length ? { SSO_CLAIMS: f.claims.join(',') } : {}),
             ...providerEnv,
             ...brandEnv,
         };
@@ -186,16 +204,35 @@ function Wizard({ session, authT, filterT }) {
         // holds SESSION_SECRET (that stays app-only, signing OAuth/SAML flow cookies).
         const filterSecretRefs = isCookie ? {} : { SESSION_SECRET: f.sessionSecret.id };
 
+        // Protection scope: either one catch-all rule, or one rule per protected path prefix.
+        // Every rule binds the same filter app — it self-bypasses AUTH_PREFIX internally
+        // regardless of which CDN rule(s) route to it.
+        const filterRules =
+            f.protectionScope === 'all'
+                ? [
+                      {
+                          // Match every path (the CDN API rejects a rule of only slashes, so not '^/').
+                          ref: 'filter-rule',
+                          name: `${f.name}-sso-filter`,
+                          rule: '^/.*',
+                          weight: 1,
+                          fastedgeFilter: { appRef: 'filter', hook: 'on_request_headers', interruptOnError: true },
+                      },
+                  ]
+                : parseProtectedPaths(f.protectedPaths)
+                      .map((path, i) => ({
+                          ref: `filter-rule-${i}`,
+                          name: `${f.name}-sso-filter-${i + 1}`,
+                          rule: `^${escapeRegex(path)}`,
+                          weight: 1,
+                          fastedgeFilter: { appRef: 'filter', hook: 'on_request_headers', interruptOnError: true },
+                      }));
+
         const planParams = {
+            // filter (the CDN-facing app, wired into the resource's request rules) is listed
+            // first so the wizard host anchors WIZARD_SOURCE_CONFIG on it; app becomes the
+            // WIZARD_ANCHOR sibling. See createFastedgeAppsChain — anchor = first app created.
             fastedgeApps: [
-                {
-                    ref: 'app',
-                    name: `${f.name}-app`,
-                    api_type: 'wasi-http',
-                    source: { fromTemplateId: authT.id },
-                    env: appEnv,
-                    secretRefs: appSecretRefs,
-                },
                 {
                     ref: 'filter',
                     name: `${f.name}-filter`,
@@ -203,6 +240,14 @@ function Wizard({ session, authT, filterT }) {
                     source: { fromTemplateId: filterT.id },
                     env: filterEnv,
                     secretRefs: filterSecretRefs,
+                },
+                {
+                    ref: 'app',
+                    name: `${f.name}-app`,
+                    api_type: 'wasi-http',
+                    source: { fromTemplateId: authT.id },
+                    env: appEnv,
+                    secretRefs: appSecretRefs,
                 },
             ],
             sharedEnv,
@@ -217,14 +262,7 @@ function Wizard({ session, authT, filterT }) {
                     weight: 10,
                     originGroupRef: 'app-origin',
                 },
-                // Enforce the filter on everything else (it self-bypasses AUTH_PREFIX internally).
-                {
-                    ref: 'filter-rule',
-                    name: `${f.name}-sso-filter`,
-                    rule: '^/.*',
-                    weight: 1,
-                    fastedgeFilter: { appRef: 'filter', hook: 'on_request_headers', interruptOnError: true },
-                },
+                ...filterRules,
             ],
         };
 
