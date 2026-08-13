@@ -6,7 +6,11 @@ export function StepRouting({ f, set }) {
         <>
             <h2 tabIndex={-1}>Routing &amp; token binding</h2>
             <p className="totp-lede">
-                These values must be <strong>identical</strong> on both apps — the wizard binds them once to both.
+                These fields all describe one thing — the MFA session your visitor gets after a
+                successful challenge: where the challenge page lives (auth prefix), which site is
+                allowed to accept that session (audience), where a browser should land to start a
+                challenge (Login URL), and an optional extra check (issuer). They must be
+                <strong> identical</strong> on both apps — the wizard binds them once to both.
             </p>
             <Field
                 label="Auth path prefix"

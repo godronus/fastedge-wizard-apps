@@ -35,8 +35,12 @@ export function StepSecrets({ session, f, set }) {
         <>
             <h2 tabIndex={-1}>Secrets</h2>
             <p className="totp-lede">
-                Generate the signing keys and add the Gcore API token. The session key is
-                <strong> shared</strong> — created once and bound to both apps.
+                Four secrets, four different jobs: one proves the CDN filter to itself
+                (<strong>session signing key</strong>), one proves your origin&apos;s password
+                check to this app (<strong>handoff key</strong>), one gates who can enrol a user
+                (<strong>enroll API key</strong>), and one lets this app read/write the seed store
+                (<strong>Gcore API token</strong>). Generate each below — the session key is
+                <strong> shared</strong>, created once and bound to both apps.
             </p>
             <ResourceRow title="Session signing key (shared)"
                 sub="HS256, edge-internal. App signs mfa_session; filter verifies it." set={!!f.sessionKey}

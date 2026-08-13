@@ -21,6 +21,12 @@ const hostOrigin = new URLSearchParams(location.search).get('hostOrigin') || 'ht
 // the literal path the user typed.
 const escapeRegex = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
+const parseProtectedPaths = (raw) =>
+    raw
+        .split(',')
+        .map((p) => p.trim())
+        .filter((p) => p.length > 1 && p.startsWith('/'));
+
 // ── Wizard root ────────────────────────────────────────────────────────────
 
 function Wizard({ session, ctx, filterT, appT }) {
@@ -65,7 +71,6 @@ function Wizard({ session, ctx, filterT, appT }) {
         ticketTtl: '90',
         kvPrefix: 'totp:',
         selfEnroll: 'true',
-        gcoreApiUrl: 'https://api.gcore.com',
         // Branding
         brandMode: 'none',
         brandName: '',
@@ -80,28 +85,28 @@ function Wizard({ session, ctx, filterT, appT }) {
         state: { status: 'idle', plan: null, progress: [], result: null, error: null },
     });
 
-    // Steps: 0 Overview · 1 CDN · 2 Routing · 3 Store · 4 Secrets · 5 Profile
+    // Steps: 0 Overview · 1 Profile · 2 CDN · 3 Routing · 4 Store · 5 Secrets
     //        6 TOTP settings · 7 Branding · 8 Review
     const canAdvance = useMemo(() => {
         switch (step) {
             case 0:
                 return !!f.name.trim();
             case 1:
-                return !!f.cdn;
+                return f.profile === 'A' || (f.profile === 'B' && !!f.proofKey);
             case 2:
+                return !!f.cdn;
+            case 3:
                 return (
                     !!f.audience.trim() &&
                     f.authPrefix.startsWith('/') &&
                     f.authPrefix.length > 1 &&
                     (f.protectionScope === 'all' ||
-                        (f.protectionScope === 'paths' && !!f.protectedPaths.trim()))
+                        (f.protectionScope === 'paths' && parseProtectedPaths(f.protectedPaths).length > 0))
                 );
-            case 3:
-                return !!f.store;
             case 4:
-                return !!(f.sessionKey && f.handoff && f.enroll && f.gcore);
+                return !!f.store;
             case 5:
-                return f.profile === 'A' || (f.profile === 'B' && !!f.proofKey);
+                return !!(f.sessionKey && f.handoff && f.enroll && f.gcore);
             case 6:
                 return true; // all optional
             case 7:
@@ -140,7 +145,6 @@ function Wizard({ session, ctx, filterT, appT }) {
                       TICKET_TTL: f.ticketTtl,
                       KV_KEY_PREFIX: f.kvPrefix,
                       ALLOW_SELF_ENROLLMENT: f.selfEnroll,
-                      GCORE_API_URL: f.gcoreApiUrl,
                   }
                 : {};
 
@@ -203,10 +207,7 @@ function Wizard({ session, ctx, filterT, appT }) {
                           fastedgeFilter: { appRef: 'filter', hook: 'on_request_headers', interruptOnError: true },
                       },
                   ]
-                : f.protectedPaths
-                      .split(',')
-                      .map((p) => p.trim())
-                      .filter(Boolean)
+                : parseProtectedPaths(f.protectedPaths)
                       .map((path, i) => ({
                           ref: `filter-rule-${i}`,
                           name: `${f.name}-mfa-filter-${i + 1}`,
@@ -284,6 +285,13 @@ function Wizard({ session, ctx, filterT, appT }) {
                     appT={appT}
                 />
             </WizardStep>
+            <WizardStep title="Profile">
+                <StepProfile
+                    session={session}
+                    f={f}
+                    set={set}
+                />
+            </WizardStep>
             <WizardStep title="CDN resource">
                 <StepCdn
                     session={session}
@@ -306,13 +314,6 @@ function Wizard({ session, ctx, filterT, appT }) {
             </WizardStep>
             <WizardStep title="Secrets">
                 <StepSecrets
-                    session={session}
-                    f={f}
-                    set={set}
-                />
-            </WizardStep>
-            <WizardStep title="Profile">
-                <StepProfile
                     session={session}
                     f={f}
                     set={set}
