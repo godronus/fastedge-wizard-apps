@@ -42,6 +42,7 @@ function Wizard({ session, authT, filterT }) {
         // Session signing
         sessionSecret: null,
         signingKey: null,
+        claims: ['email', 'name'],
         // Providers
         selectedProviders: [],
         providers: {
@@ -169,6 +170,7 @@ function Wizard({ session, authT, filterT }) {
             ...(f.canonicalHost ? { CANONICAL_HOST: f.canonicalHost } : {}),
             ...(f.allowedOrigins ? { SSO_ALLOWED_ORIGINS: f.allowedOrigins } : {}),
             ...(isCookie ? { SESSION_PUBLIC_JWK: f.signingKey.publicKey } : {}),
+            ...(f.claims.length ? { SSO_CLAIMS: f.claims.join(',') } : {}),
             ...providerEnv,
             ...brandEnv,
         };
