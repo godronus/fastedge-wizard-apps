@@ -1,3 +1,4 @@
+import { OptionalPanels, WizardPanel } from '@gcore/wizard-step-kit/react';
 import { Note, Field } from '../components.jsx';
 
 export function StepRouting({ f, set }) {
@@ -18,6 +19,31 @@ export function StepRouting({ f, set }) {
                 onChange={(v) => set({ authPrefix: v })}
                 hint="Where the auth app is mounted. The CDN path rule and the filter bypass both use this. Default: /auth"
             />
+            <h3>Protection scope</h3>
+            <p className="sso-lede">
+                Which paths on this CDN resource require a valid session. The filter always
+                bypasses the auth prefix above, whichever scope you choose.
+            </p>
+            <OptionalPanels onChange={(sel) => set({ protectionScope: sel[0] || '' })}>
+                <WizardPanel value="all" label="Protect the entire site">
+                    <p>Every path on this CDN resource requires a valid session. Choose this only
+                        if the whole site sits behind SSO.</p>
+                </WizardPanel>
+                <WizardPanel value="paths" label="Protect specific paths">
+                    <p>Only the paths listed below require a valid session — everything else on
+                        this CDN resource is unaffected.</p>
+                    <Field
+                        label="Protected paths"
+                        value={f.protectedPaths}
+                        onChange={(v) => set({ protectedPaths: v })}
+                        placeholder="/checkout, /account"
+                        hint="Comma-separated path prefixes, e.g. /checkout, /account. Each becomes its own CDN rule."
+                    />
+                </WizardPanel>
+            </OptionalPanels>
+            {!f.protectionScope && (
+                <Note kind="danger">Choose a protection scope before continuing — there is no default.</Note>
+            )}
             <Field
                 label="SSO audience (required)"
                 value={f.audience}
