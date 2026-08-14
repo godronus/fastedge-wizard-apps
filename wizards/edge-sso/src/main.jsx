@@ -345,17 +345,19 @@ function App() {
                 // per role. Identify each by api_type, never by hard-coded id.
                 const ids = [ctx.launchTemplateId, ...ctx.companionTemplateIds];
                 const details = await Promise.all(ids.map((id) => session.fastedge.templates.read({ id })));
-                const filterT = details.find((t) => t.api_type === 'proxy-wasm');
-                const authT = details.find((t) => t.api_type === 'wasi-http');
+                const filterTs = details.filter((t) => t.api_type === 'proxy-wasm');
+                const authTs = details.filter((t) => t.api_type === 'wasi-http');
 
-                if (!filterT || !authT) {
+                if (filterTs.length !== 1 || authTs.length !== 1) {
                     session?.dispose();
                     setState({
                         status: 'error',
-                        error: 'Expected one proxy-wasm filter and one wasi-http auth app. Check companion templates.',
+                        error: 'Expected exactly one proxy-wasm filter and one wasi-http auth app. Check companion templates.',
                     });
                     return;
                 }
+                const [filterT] = filterTs;
+                const [authT] = authTs;
                 setState({ status: 'ready', session, ctx, authT, filterT });
             } catch (err) {
                 setState({ status: 'error', error: `${err.code ?? 'error'}: ${err.message}` });
