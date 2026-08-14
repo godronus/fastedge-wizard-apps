@@ -189,15 +189,10 @@ function Wizard({ session, authT, filterT }) {
         const filterSecretRefs = isCookie ? {} : { SESSION_SECRET: f.sessionSecret.id };
 
         const planParams = {
+            // filter (the CDN-facing app, wired into the resource's request rules) is listed
+            // first so the wizard host anchors WIZARD_SOURCE_CONFIG on it; app becomes the
+            // WIZARD_ANCHOR sibling. See createFastedgeAppsChain — anchor = first app created.
             fastedgeApps: [
-                {
-                    ref: 'app',
-                    name: `${f.name}-app`,
-                    api_type: 'wasi-http',
-                    source: { fromTemplateId: authT.id },
-                    env: appEnv,
-                    secretRefs: appSecretRefs,
-                },
                 {
                     ref: 'filter',
                     name: `${f.name}-filter`,
@@ -205,6 +200,14 @@ function Wizard({ session, authT, filterT }) {
                     source: { fromTemplateId: filterT.id },
                     env: filterEnv,
                     secretRefs: filterSecretRefs,
+                },
+                {
+                    ref: 'app',
+                    name: `${f.name}-app`,
+                    api_type: 'wasi-http',
+                    source: { fromTemplateId: authT.id },
+                    env: appEnv,
+                    secretRefs: appSecretRefs,
                 },
             ],
             sharedEnv,
