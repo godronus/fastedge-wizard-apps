@@ -1,0 +1,23 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="stylesheet" href="./styles.css" />
+    </head>
+    <body>
+        <!-- Hidden until connect() resolves so the theme class is on <body> before first paint. -->
+        <main hidden>
+            <h1>HTML to Markdown</h1>
+            <p>
+                Converts a CDN resource's HTML responses to Markdown whenever a client sends
+                <code>Accept: text/markdown</code> — useful for AI agents that prefer Markdown over HTML.
+            </p>
+            <p data-role="resource-summary" hidden></p>
+            <button data-action="pick-resource" type="button">Select CDN resource</button>
+            <button data-action="deploy" type="button" hidden>Deploy</button>
+            <p data-role="status" role="status"></p>
+        </main>
+        <script type="module" src="./main.js"></script>
+    </body>
+</html>

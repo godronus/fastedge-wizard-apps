@@ -1,0 +1,78 @@
+# html2md — HTML to Markdown Wizard
+
+## What it is
+
+The simplest possible wizard shape: a single `proxy-wasm` app, zero params, one CDN
+resource picker, one deploy action. It deploys the `Transform HTML to Markdown`
+template and attaches it to a CDN resource across all three of its required hooks
+(`on_request_headers`, `on_response_headers`, `on_response_body`), per the template's
+own `instructions.md`.
+
+It's the reference example for `deployment.plan`'s `cdnResourceFastedgeHandlers` —
+resource-level FastEdge handler assignment (a PATCH on the CDN resource's own
+`options.fastedge`), which is distinct from `newCdnRules[].fastedgeFilter` (scoped to
+one path rule, headers-only). `cdnResourceFastedgeHandlers` is the only way to reach
+`on_response_body` / `on_request_body`. See `docs/wizards/intent-catalog.md` in the
+main `fastedge-frontend` repo for the full param/return shape.
+
+## ⚠️ Blocked on an SDK release
+
+This wizard depends on `cdnResourceFastedgeHandlers`, which exists in the
+`fastedge-frontend` host and in this SDK's local `src/types.ts` (`fastedge-wizard-sdk`
+repo) but **has not been published**. Until a `@gcoredev/fastedge-wizard-sdk` release
+including it ships, and the host change deploys to the portal:
+
+- Local `pnpm dev` (mock host) works — the mock host's `deployment.plan` stub was
+  updated in the same change to reflect the new field.
+- The real portal will not: `session.deployment.deploy()` will call an intent param
+  the deployed host doesn't recognize yet.
+
+`package.json` pins the SDK to `"latest"` rather than a specific version (contrast
+edge-totp/edge-sso, which pin `0.0.4`) because no published version has this field
+yet. **Pin to a specific version once one ships that includes it** — don't leave it
+on `"latest"` for a production wizard past that point.
+
+## Tech stack
+
+Vanilla JS (`wizards/_template` starter) — no framework needed for a one-screen wizard.
+
+```
+wizards/html2md/
+  src/
+    index.html
+    main.js           ← the whole wizard: pick resource → deploy → finish
+    styles.css
+  fixtures/
+    fastedge/templates.json  ← launch template, normalised id 1
+  package.json
+```
+
+Never commit `dist/`/`release/` — CI builds and publishes.
+
+## Build & dev
+
+```bash
+cd wizards/html2md
+pnpm install
+pnpm run dev          # builds + starts the SDK mock host on localhost
+```
+
+## Flow
+
+1. `connect()` + `context.get()` — identify the launch template. No companions.
+2. `cdn.resources.pick()` — user picks the CDN resource to attach to.
+3. `deployment.deploy()` — one `fastedgeApps` entry (`proxy-wasm`, `fromTemplateId:
+   ctx.launchTemplateId`) plus `cdnResourceFastedgeHandlers` binding all three hooks to
+   that app's ref, in one call (plan + apply + progress, no separate plan/apply step
+   needed — nothing here benefits from previewing the plan before committing).
+4. On `status: 'complete'`, show a Close button that calls `session.wizard.finish()`.
+
+## Deliberately out of scope
+
+- **Re-entry mode** (`ctx.launchTemplateId === null`, opened from an existing app) —
+  the wizard bails with a message. Re-attaching an *existing* app to a different/
+  additional CDN resource would be a legitimate future use case, but nothing asked
+  for it yet; add it if a real need shows up.
+- **Per-hook app overrides** — `cdnResourceFastedgeHandlers` supports binding a
+  different app per hook (see intent-catalog.md), but this template is one app on
+  all three hooks, so the wizard doesn't expose that generality in its UI.
