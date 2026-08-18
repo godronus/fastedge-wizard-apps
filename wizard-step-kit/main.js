@@ -127,7 +127,7 @@ var GcWizardShell = class extends HTMLElement {
       const heading = active.querySelector("h1,h2,h3,h4,h5,h6");
       if (heading) {
         heading.setAttribute("tabindex", "-1");
-        heading.focus();
+        heading.focus({ preventScroll: true });
       }
     }
   }
