@@ -3,10 +3,11 @@
 ## What it is
 
 The simplest possible wizard shape: a single `proxy-wasm` app, zero params, one CDN
-resource picker, one deploy action. It deploys the `Transform HTML to Markdown`
-template and attaches it to a CDN resource across all three of its required hooks
-(`on_request_headers`, `on_response_headers`, `on_response_body`), per the template's
-own `instructions.md`.
+resource picker, one deploy action, laid out as a 3-step `wizard-step-kit` shell
+(Overview → CDN resource → Review) for chrome/UX consistency with the other wizards.
+It deploys the `Transform HTML to Markdown` template and attaches it to a CDN resource
+across all three of its required hooks (`on_request_headers`, `on_response_headers`,
+`on_response_body`), per the template's own `instructions.md`.
 
 It's the reference example for `deployment.plan`'s `cdnResourceFastedgeHandlers` —
 resource-level FastEdge handler assignment (a PATCH on the CDN resource's own
@@ -34,13 +35,16 @@ on `"latest"` for a production wizard past that point.
 
 ## Tech stack
 
-Vanilla JS (`wizards/_template` starter) — no framework needed for a one-screen wizard.
+Vanilla JS (`wizards/_template` starter) + `@gcore/wizard-step-kit` for the
+`<gc-wizard-shell>`/`<gc-wizard-step>` stepper, `<gc-resource-row>` for the CDN
+resource picker, and `<gc-deploy-progress>` for the Review step's plan/progress/result
+display — no framework needed for a wizard this small.
 
 ```
 wizards/html2md/
   src/
     index.html
-    main.js           ← the whole wizard: pick resource → deploy → finish
+    main.js           ← the whole wizard: name → pick resource → deploy → finish
     styles.css
   fixtures/
     fastedge/templates.json  ← launch template, normalised id 1
@@ -59,13 +63,18 @@ pnpm run dev          # builds + starts the SDK mock host on localhost
 
 ## Flow
 
-1. `connect()` + `context.get()` — identify the launch template. No companions.
-2. `cdn.resources.pick()` — user picks the CDN resource to attach to.
-3. `deployment.deploy()` — one `fastedgeApps` entry (`proxy-wasm`, `fromTemplateId:
-   ctx.launchTemplateId`) plus `cdnResourceFastedgeHandlers` binding all three hooks to
-   that app's ref, in one call (plan + apply + progress, no separate plan/apply step
-   needed — nothing here benefits from previewing the plan before committing).
-4. On `status: 'complete'`, show a Close button that calls `session.wizard.finish()`.
+1. **Overview** — `connect()` + `context.get()` identify the launch template (no
+   companions); the user sets a deployment name (default `html2md`), used to name the
+   created app (`<name>-filter`) rather than a forced `Date.now()` suffix.
+2. **CDN resource** — `cdn.resources.pick()` via a `<gc-resource-row>`; the user picks
+   the CDN resource to attach to.
+3. **Review** — summarises the name + picked resource, then `deployment.deploy()`
+   drives the shell's `finish` event: one `fastedgeApps` entry (`proxy-wasm`,
+   `fromTemplateId: ctx.launchTemplateId`) plus `cdnResourceFastedgeHandlers` binding
+   all three hooks to that app's ref, in one call (`onPlan`/`onProgress` feed a
+   `<gc-deploy-progress>`). On `status: 'complete'` the shell's `finished` attribute
+   flips the Next button to a single "Finished" button, which fires `wizard-finished`
+   → `session.wizard.finish()`.
 
 ## Deliberately out of scope
 
