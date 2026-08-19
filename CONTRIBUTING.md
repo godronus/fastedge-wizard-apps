@@ -8,7 +8,15 @@ Wizards are plain HTML + JavaScript apps that run inside the Gcore portal via an
 
 ## How it works
 
-Your wizard lives at `wizards/<name>/` (source only); CI builds and publishes it — see [`README.md`](README.md#repo-layout) for the build → `gh-pages` → jsDelivr → proxy topology.
+Your wizard lives at `wizards/<customer-name>-<account-id>/<name>/` (source only); CI builds and publishes it — see [`README.md`](README.md#repo-layout) for the build → `gh-pages` → jsDelivr → proxy topology.
+
+**Naming your wizard's folder:** nest it one level under `wizards/` in a
+`<customer-name>-<account-id>/` folder — e.g. `wizards/acme-corp-482913/onboarding-wizard/`.
+The account id is what actually disambiguates: customer *names* collide (two
+"Acme"s, a rename) but account ids don't, and this keeps two customers'
+wizards from ever colliding under `release/` or in a template's `wizardDir`.
+The one exception is `wizards/gcore/` — G-Core's own wizards, no account-id
+suffix, since it's this repo's own namespace rather than a customer account.
 
 The part that matters for submission: **merging does not make a wizard live.** After a wizard merges, the Gcore team creates a FastEdge template that points to it via `WIZARD_SOURCE_CONFIG` — that publish step is what surfaces it in the portal.
 
@@ -38,7 +46,9 @@ cd FastEdge-Wizard-apps
 
 Before copying a wizard template, run `/wizard-intake` (Claude Code skill) from
 the `fastedge-wizard-apps/` directory. It fetches the full param list for your
-target template(s) from the Gcore API and writes `wizards/<name>/TARGET.md` — a
+target template(s) from the Gcore API and writes
+`wizards/<customer-name>-<account-id>/<name>/TARGET.md` (`wizards/gcore/<name>/`
+if this is a G-Core-owned wizard) — a
 durable brief with the param table, cross-app constraints, secrets/store needs,
 and CDN wiring. Later build steps and any hand-off agent reason against this
 file instead of rediscovering everything.
@@ -61,11 +71,17 @@ Pick a starting template:
 | `wizards/_template-react` | React 19 — pre-wired with the step-kit |
 
 ```bash
-cp -r wizards/_template wizards/<your-wizard-name>        # vanilla
+cp -r wizards/_template wizards/<customer-name>-<account-id>/<your-wizard-name>        # vanilla
 # or
-cp -r wizards/_template-react wizards/<your-wizard-name>  # React
-cd wizards/<your-wizard-name>
+cp -r wizards/_template-react wizards/<customer-name>-<account-id>/<your-wizard-name>  # React
+cd wizards/<customer-name>-<account-id>/<your-wizard-name>
 ```
+
+**If you used `_template-react`:** it depends on `@gcore/wizard-step-kit` via
+`file:../../packages/wizard-step-kit`, correct only for the template's own
+(unnested) location. Your copy is one level deeper, so update `package.json`
+to `file:../../../packages/wizard-step-kit` (one more `../`) before installing
+— `pnpm install` fails to resolve the old path otherwise.
 
 Edit `package.json` — set `"name"` and the SDK dependency (templates and examples track `"latest"`; a production wizard can pin a specific published version — check `context/INDEX.md`):
 
@@ -93,7 +109,7 @@ Open http://localhost:9999 — you get a browser dev-tools-style panel next to y
 
 If you are a Gcore team member with portal access, you can pull real data from a live account into your fixture files with the `/sync-wizard-fixtures` skill (Claude Code). Run it from `wizards/<your-wizard>/` — it fetches live templates, apps, secrets, stores, and CDN resources, then writes fudged (safe-to-commit) fixture files. This is the fastest way to get representative data without hand-crafting JSON.
 
-If you do **not** have portal access, hand-craft fixtures from the template's README and params. Check `wizards/edge-totp/fixtures/` for a committed example — it covers both templates, their full param lists, and enough CDN/secret/store data to plan and apply in the mock host.
+If you do **not** have portal access, hand-craft fixtures from the template's README and params. Check `wizards/gcore/edge-totp/fixtures/` for a committed example — it covers both templates, their full param lists, and enough CDN/secret/store data to plan and apply in the mock host.
 
 ---
 
@@ -102,8 +118,8 @@ If you do **not** have portal access, hand-craft fixtures from the template's RE
 Before writing wizard logic, understand the template you are deploying. Every
 constraint you miss here becomes a hard-coded assumption or a silent breakage.
 
-If you ran `/wizard-intake` in §2 above, you already have `wizards/<name>/TARGET.md`
-— start there. It has the param table, cross-app constraints, secrets/store needs,
+If you ran `/wizard-intake` in §2 above, you already have
+`wizards/<customer-name>-<account-id>/<name>/TARGET.md` — start there. It has the param table, cross-app constraints, secrets/store needs,
 and CDN wiring derived from the live API.
 
 **The param source of truth is `fastedge.templates.read` (live API) + the
@@ -268,7 +284,7 @@ pnpm -w run lint:css     # must pass — no raw colours
 pnpm run build           # builds all wizards — must pass cleanly
 ```
 
-> **Root vs wizard build**: `pnpm run build` from the repo root builds every wizard and assembles `release/`. `pnpm run build` from `wizards/<name>/` builds only your wizard into its own `dist/`. The gate above requires the root build to pass.
+> **Root vs wizard build**: `pnpm run build` from the repo root builds every wizard and assembles `release/`. `pnpm run build` from `wizards/<customer-name>-<account-id>/<name>/` builds only your wizard into its own `dist/`. The gate above requires the root build to pass.
 
 Check your wizard in both themes (the mock host has a "Switch to dark" button). Check at 1280×800 and a narrower viewport.
 

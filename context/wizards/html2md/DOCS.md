@@ -41,7 +41,7 @@ resource picker, and `<gc-deploy-progress>` for the Review step's plan/progress/
 display — no framework needed for a wizard this small.
 
 ```
-wizards/html2md/
+wizards/gcore/html2md/
   src/
     index.html
     main.js           ← the whole wizard: name → pick resource → deploy → finish
@@ -56,7 +56,7 @@ Never commit `dist/`/`release/` — CI builds and publishes.
 ## Build & dev
 
 ```bash
-cd wizards/html2md
+cd wizards/gcore/html2md
 pnpm install
 pnpm run dev          # builds + starts the SDK mock host on localhost
 ```
