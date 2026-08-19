@@ -8,7 +8,7 @@
         "dev:watch": "esbuild src/main.js --bundle --watch --outfile=dist/main.js"
     },
     "dependencies": {
-        "@gcoredev/fastedge-wizard-sdk": "latest",
+        "@gcoredev/fastedge-wizard-sdk": "0.0.5",
         "@gcore/wizard-step-kit": "file:../../packages/wizard-step-kit"
     },
     "devDependencies": {
