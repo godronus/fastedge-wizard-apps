@@ -1,4 +1,4 @@
-// node_modules/.pnpm/@gcore+wizard-step-kit@file+..+..+packages+wizard-step-kit_react@19.2.8/node_modules/@gcore/wizard-step-kit/src/gc-wizard-shell.js
+// node_modules/.pnpm/@gcore+wizard-step-kit@file+..+..+..+packages+wizard-step-kit_react@19.2.8/node_modules/@gcore/wizard-step-kit/src/gc-wizard-shell.js
 var GcWizardShell = class extends HTMLElement {
   static observedAttributes = [
     "can-advance",
@@ -195,7 +195,7 @@ var GcWizardShell = class extends HTMLElement {
 };
 customElements.define("gc-wizard-shell", GcWizardShell);
 
-// node_modules/.pnpm/@gcore+wizard-step-kit@file+..+..+packages+wizard-step-kit_react@19.2.8/node_modules/@gcore/wizard-step-kit/src/gc-optional-panels.js
+// node_modules/.pnpm/@gcore+wizard-step-kit@file+..+..+..+packages+wizard-step-kit_react@19.2.8/node_modules/@gcore/wizard-step-kit/src/gc-optional-panels.js
 var GcOptionalPanels = class extends HTMLElement {
   static observedAttributes = ["multiple"];
   #selected = /* @__PURE__ */ new Set();
@@ -278,7 +278,7 @@ var GcOptionalPanels = class extends HTMLElement {
 };
 customElements.define("gc-optional-panels", GcOptionalPanels);
 
-// node_modules/.pnpm/@gcore+wizard-step-kit@file+..+..+packages+wizard-step-kit_react@19.2.8/node_modules/@gcore/wizard-step-kit/src/gc-resource-row.js
+// node_modules/.pnpm/@gcore+wizard-step-kit@file+..+..+..+packages+wizard-step-kit_react@19.2.8/node_modules/@gcore/wizard-step-kit/src/gc-resource-row.js
 var GcResourceRow = class extends HTMLElement {
   static observedAttributes = [
     "title",
@@ -348,7 +348,7 @@ var GcResourceRow = class extends HTMLElement {
 };
 customElements.define("gc-resource-row", GcResourceRow);
 
-// node_modules/.pnpm/@gcore+wizard-step-kit@file+..+..+packages+wizard-step-kit_react@19.2.8/node_modules/@gcore/wizard-step-kit/src/gc-deploy-progress.js
+// node_modules/.pnpm/@gcore+wizard-step-kit@file+..+..+..+packages+wizard-step-kit_react@19.2.8/node_modules/@gcore/wizard-step-kit/src/gc-deploy-progress.js
 var EMPTY = { status: "idle", plan: null, progress: [], result: null, error: null };
 var STATUS_LABEL = { planning: "Planning\u2026", applying: "Applying\u2026" };
 var GcDeployProgress = class extends HTMLElement {
