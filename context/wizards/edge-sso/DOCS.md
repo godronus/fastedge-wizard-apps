@@ -14,7 +14,7 @@ Both templates carry real, non-empty params — neither is an inert placeholder.
 React 19 (JSX via esbuild `--jsx=automatic --minify`) with `@gcore/wizard-step-kit/react` for the stepped shell; the SDK is bundled in.
 
 ```
-wizards/edge-sso/
+wizards/gcore/edge-sso/
   src/
     index.html
     main.jsx          ← plan assembly + deploy orchestration + template classification
@@ -30,7 +30,7 @@ Never commit `dist/`/`release/` — CI builds and publishes.
 ## Build & dev
 
 ```bash
-cd wizards/edge-sso
+cd wizards/gcore/edge-sso
 pnpm install
 pnpm run dev          # builds + starts the SDK mock host on localhost
 pnpm run dev:watch    # esbuild --watch in a second terminal (no host restart)
@@ -79,7 +79,7 @@ Google/Microsoft/Facebook each have a Redirect URI field, pre-filled on selectio
 Two templates total: "SSO - CDN Filter" (`proxy-wasm`, template id 194 — the launch template) and "SSO - Auth App" (`wasi-http`, template id 191 — its sole companion). The launch template carries `WIZARD_SOURCE_CONFIG` with the auth-app's id:
 
 ```
-WIZARD_SOURCE_CONFIG={"repo":"G-Core/FastEdge-Wizard-apps","path":"gh-pages/edge-sso","cdn":"jsdelivr","companionTemplateIds":[191]}
+WIZARD_SOURCE_CONFIG={"repo":"G-Core/FastEdge-Wizard-apps","ref":"gh-pages","wizardDir":"edge-sso","cdn":"jsdelivr","companionTemplateIds":[191]}
 ```
 
 Source of truth for both templates' params lives in `fastedge-coordinator/FastEdge-templates/edge-sso/{auth-app,cdn-filter}/registry.json`.

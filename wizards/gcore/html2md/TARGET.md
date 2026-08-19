@@ -95,7 +95,7 @@ None.
   `fastedgeApps` entry, `api_type: 'proxy-wasm'`, `source: { fromTemplateId }`,
   plus `cdnResourceFastedgeHandlers` binding all 3 hooks to that app's ref) →
   done. No form fields, no secrets, no stores.
-- Built as `wizards/html2md/` from `wizards/_template` (vanilla JS) —
+- Built as `wizards/gcore/html2md/` from `wizards/_template` (vanilla JS) —
   see `context/wizards/html2md/DOCS.md` for the wizard's own docs.
 - `fixtures/fastedge/templates.json` models the launch template as
   normalised id `1` (proxy-wasm, no params), per the mock-host convention.

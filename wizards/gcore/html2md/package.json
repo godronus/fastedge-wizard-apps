@@ -9,7 +9,7 @@
     },
     "dependencies": {
         "@gcoredev/fastedge-wizard-sdk": "0.0.5",
-        "@gcore/wizard-step-kit": "file:../../packages/wizard-step-kit"
+        "@gcore/wizard-step-kit": "file:../../../packages/wizard-step-kit"
     },
     "devDependencies": {
         "esbuild": "^0.25.0"

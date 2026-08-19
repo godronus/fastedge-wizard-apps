@@ -3,8 +3,8 @@ name: Wizard checks
 on:
   pull_request:
     paths:
-      - 'wizards/*/src/**'
-      - 'wizards/*/package.json'
+      - 'wizards/**/src/**'
+      - 'wizards/**/package.json'
       - 'packages/**' # shared step-kit — bundled into every React wizard
       - 'e2e/**' # spec + committed snapshots
       - 'playwright.config.ts'

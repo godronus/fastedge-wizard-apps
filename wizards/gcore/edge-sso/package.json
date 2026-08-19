@@ -1,5 +1,5 @@
 {
-    "name": "edge-totp",
+    "name": "edge-sso",
     "private": true,
     "type": "module",
     "scripts": {
@@ -9,7 +9,7 @@
     },
     "dependencies": {
         "@gcoredev/fastedge-wizard-sdk": "0.0.5",
-        "@gcore/wizard-step-kit": "file:../../packages/wizard-step-kit",
+        "@gcore/wizard-step-kit": "file:../../../packages/wizard-step-kit",
         "react": "^19.0.0",
         "react-dom": "^19.0.0"
     },

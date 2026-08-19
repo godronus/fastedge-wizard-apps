@@ -1,18 +1,38 @@
 import { test, expect, type Page } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
-import { readdirSync } from 'node:fs';
+import { readdirSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 
 // HARD RULE: every deployed wizard must have passing snapshot + a11y coverage.
-// So we discover wizards the same way build-all/assemble do — all non-underscore
-// dirs under wizards/ — a blacklist, not a whitelist: a NEW wizard is covered by
-// default. To exclude one, add its name to E2E_SKIP with a comment saying why.
+// So we discover wizards the same way build-all/assemble do — any dir at any
+// depth under wizards/ with its own package.json (so a flat wizards/<name>/
+// and a nested wizards/<customer>/<name>/ are both covered) — a blacklist,
+// not a whitelist: a NEW wizard is covered by default. To exclude one, add
+// its name to E2E_SKIP with a comment saying why.
 const E2E_SKIP = new Set<string>([]);
 const wizardsDir = join(__dirname, '..', 'wizards');
-const WIZARDS = readdirSync(wizardsDir, { withFileTypes: true })
-    .filter((e) => e.isDirectory() && !e.name.startsWith('_') && !e.name.startsWith('.'))
-    .map((e) => e.name)
-    .filter((name) => !E2E_SKIP.has(name));
+
+function findWizards(dir: string, base = ''): string[] {
+    const entries = readdirSync(dir, { withFileTypes: true });
+    const found: string[] = [];
+
+    for (const e of entries) {
+        if (!e.isDirectory() || e.name.startsWith('_') || e.name.startsWith('.') || e.name === 'node_modules') continue;
+
+        const relPath = base ? `${base}/${e.name}` : e.name;
+        const absPath = join(dir, e.name);
+
+        if (existsSync(join(absPath, 'package.json'))) {
+            found.push(relPath);
+        } else {
+            found.push(...findWizards(absPath, relPath));
+        }
+    }
+
+    return found;
+}
+
+const WIZARDS = findWizards(wizardsDir).filter((name) => !E2E_SKIP.has(name));
 
 // Per-wizard bridge stubs — only what a wizard needs to reach a rendered
 // screenshot. Wizards not listed fall back to the generic empty/minimal defaults.
@@ -24,7 +44,7 @@ const OVERRIDES: Record<string, BridgeOverrides> = {
     // edge-totp reads launchTemplateId + companionTemplateIds from context.get,
     // resolves each via templates.read, and matches by api_type (never hard-coded
     // id). Give it one proxy-wasm filter + one wasi-http app so it renders.
-    'edge-totp': {
+    'gcore/edge-totp': {
         context: {
             launchTemplateId: 735,
             companionTemplateIds: [734],
@@ -43,7 +63,7 @@ const OVERRIDES: Record<string, BridgeOverrides> = {
     // three variants — SSO_VARIANT (set by StepVariant) selects gate-only/
     // cookie/header behavior at runtime. The wizard classifies each by
     // api_type (never hard-coded id), same pattern as edge-totp above.
-    'edge-sso': {
+    'gcore/edge-sso': {
         context: {
             launchTemplateId: 191,
             companionTemplateIds: [194],
@@ -60,7 +80,7 @@ const OVERRIDES: Record<string, BridgeOverrides> = {
     },
     // html2md is single-app/zero-param — it only needs launchTemplateId to be non-null
     // to render past the "must be launched from..." bail state.
-    html2md: {
+    'gcore/html2md': {
         context: {
             launchTemplateId: 558,
             companionTemplateIds: [],
@@ -156,11 +176,15 @@ for (const name of PACKAGE_EXAMPLES) {
 }
 
 for (const wizard of WIZARDS) {
+    // Flatten any customer-folder nesting (e.g. "gcore/edge-totp") into one
+    // filename segment — snapshot storage stays flat regardless of source layout.
+    const snapshotName = wizard.replace(/\//g, '-');
+
     for (const theme of ['light', 'dark'] as const) {
         test(`${wizard} renders in gc-theme-${theme}`, async ({ page }) => {
             await page.goto(wizardUrl(wizard));
             await connectBridge(page, theme, OVERRIDES[wizard] ?? {});
-            await expect(page).toHaveScreenshot(`${wizard}-gc-theme-${theme}.png`, { maxDiffPixelRatio: 0.05 });
+            await expect(page).toHaveScreenshot(`${snapshotName}-gc-theme-${theme}.png`, { maxDiffPixelRatio: 0.05 });
         });
     }
 
