@@ -58,6 +58,22 @@ const OVERRIDES: Record<string, BridgeOverrides> = {
             194: { id: 194, api_type: 'proxy-wasm', name: 'SSO - CDN Filter', params: [] },
         },
     },
+    // html2md is single-app/zero-param — it only needs launchTemplateId to be non-null
+    // to render past the "must be launched from..." bail state.
+    html2md: {
+        context: {
+            launchTemplateId: 558,
+            companionTemplateIds: [],
+            theme: 'light',
+            locale: 'en',
+            feAppId: null,
+            managedAppIds: [],
+            featureFlags: {},
+        },
+        templatesById: {
+            558: { id: 558, api_type: 'proxy-wasm', name: 'Transform HTML to Markdown', params: [] },
+        },
+    },
 };
 
 // Package example pages — no SDK bridge, just theme the body class and screenshot.

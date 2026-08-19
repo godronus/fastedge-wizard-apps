@@ -2,12 +2,12 @@
 
 ## What it is
 
-A three-variant SSO / MFA-adjacent auth wizard: it sets up a session-cookie login flow enforced at the edge, as **two FastEdge apps wired onto a CDN resource** — same shape as edge-totp, but with a "pick 2 of N companions" variant branch on top:
+A three-variant SSO / MFA-adjacent auth wizard: it sets up a session-cookie login flow enforced at the edge, as **two FastEdge apps wired onto a CDN resource** — same shape as edge-totp:
 
-- **`app`** (`wasi-http`) — the login flow (OAuth/SAML providers + session issuance) the user hits at the auth prefix.
-- **`filter`** (`proxy-wasm`) — a CDN filter that verifies the session on every protected request and redirects to the login flow when it's missing/invalid (it self-bypasses the auth prefix).
+- **`app`** (`wasi-http`, "SSO - Auth App") — the login flow (OAuth/SAML providers + session issuance) the user hits at the auth prefix.
+- **`filter`** (`proxy-wasm`, "SSO - CDN Filter") — a CDN filter that verifies the session on every protected request and redirects to the login flow when it's missing/invalid (it self-bypasses the auth prefix).
 
-The launch template (`SSO Wizard Launcher`) is an inert placeholder — `params: null` — that exists solely to carry `WIZARD_SOURCE_CONFIG`. All six real templates (3 variants × {auth-app, filter}) are companions; the wizard picks the 2 matching the chosen variant and ignores the other 4. It's the reference example for a variant picker over companion templates, and for asymmetric (ES256 keypair) vs. shared-secret (HS256) session signing.
+Both templates carry real, non-empty params — neither is an inert placeholder. The CDN filter is the launch template (a portal-UX choice: launching from the CDN side); its `WIZARD_SOURCE_CONFIG` carries `companionTemplateIds: [<auth-app id>]`. All three variants (gate-only / cookie / header) are selected by a single `SSO_VARIANT` param written identically to both templates at deploy time — there is no per-variant template selection (an earlier design with 6 per-variant companion templates was never shipped; see `TARGET.md` for the history). It's the reference example for a variant-by-param wizard, and for asymmetric (ES256 keypair) vs. shared-secret (HS256) session signing.
 
 ## Tech stack
 
@@ -21,7 +21,7 @@ wizards/edge-sso/
     components.jsx
     styles.css
     steps/            ← one file per wizard step (see below)
-  fixtures/           ← committed mock-host data (all 7 templates + params)
+  fixtures/           ← committed mock-host data (both templates + params)
   package.json
 ```
 
@@ -42,7 +42,7 @@ pnpm run dev:watch    # esbuild --watch in a second terminal (no host restart)
 
 ## Template identification
 
-The launch template (id unknown at build time, name `SSO Wizard Launcher`) is never read for params. On connect, the wizard requires `ctx.companionTemplateIds.length === 6` and classifies each companion by name substring (`gate-only` / `cookie` / `header`) + `api_type` (`wasi-http` → auth, `proxy-wasm` → filter) — see `classifyTemplates()` in `main.jsx`. It never hard-codes a template id. If any variant is missing an auth+filter pair, the wizard errors out instead of guessing.
+On connect, the wizard reads `ctx.launchTemplateId` + `ctx.companionTemplateIds`, fetches details for all of them, and classifies by `api_type` alone (`wasi-http` → auth app, `proxy-wasm` → CDN filter) — see the connect effect in `main.jsx`. It never hard-codes a template id. If the combined set isn't exactly one of each, the wizard errors out (`Expected exactly one proxy-wasm filter and one wasi-http auth app`) instead of guessing.
 
 ## Resources it creates
 
@@ -53,7 +53,7 @@ The launch template (id unknown at build time, name `SSO Wizard Launcher`) is ne
 | Provider secrets (`GOOGLE_CLIENT_SECRET`, `GITHUB_CLIENT_SECRET`, `MICROSOFT_CLIENT_SECRET`, `FACEBOOK_CLIENT_SECRET`, `IDP_CERT`) | `secrets.pickOrCreate()` | User-brought — pasted external OAuth client secret / SAML IdP cert, one per selected provider. |
 | CDN resource | `cdn.resources.pick()` | the delivery domain to wire onto |
 
-No Edge Storage step — the source repo is explicit that KV is not used for config (too expensive per read); none of the six templates declare a `data_type: "store"` param.
+No Edge Storage step — the source repo is explicit that KV is not used for config (too expensive per read); neither template declares a `data_type: "store"` param.
 
 Everything above is created **eagerly** and referenced by id in the plan. The plan itself (`session.deployment.deploy(planParams, { onPlan, onProgress })`) creates the two apps + shared env, one `newCdnOrigins` (app origin), and a `newCdnRules` set:
 
@@ -76,15 +76,17 @@ Google/Microsoft/Facebook each have a Redirect URI field, pre-filled on selectio
 
 ## Template config
 
-Seven templates total (1 launch placeholder + 6 companions). The launch template carries `WIZARD_SOURCE_CONFIG` with all six companion ids:
+Two templates total: "SSO - CDN Filter" (`proxy-wasm`, template id 194 — the launch template) and "SSO - Auth App" (`wasi-http`, template id 191 — its sole companion). The launch template carries `WIZARD_SOURCE_CONFIG` with the auth-app's id:
 
 ```
-WIZARD_SOURCE_CONFIG={"repo":"G-Core/FastEdge-Wizard-apps","path":"gh-pages/edge-sso","cdn":"jsdelivr","companionTemplateIds":[<6 companion template ids>]}
+WIZARD_SOURCE_CONFIG={"repo":"G-Core/FastEdge-Wizard-apps","path":"gh-pages/edge-sso","cdn":"jsdelivr","companionTemplateIds":[191]}
 ```
+
+Source of truth for both templates' params lives in `fastedge-coordinator/FastEdge-templates/edge-sso/{auth-app,cdn-filter}/registry.json`.
 
 ## Fixtures & e2e
 
-`fixtures/fastedge/templates.json` holds all seven templates and their full param lists — enough for the mock host to render the wizard. Refresh live data with `/sync-wizard-fixtures`. The repo-root Playwright suite (`pnpm test:e2e`) screenshots the wizard in both themes and runs axe.
+`fixtures/fastedge/templates.json` holds both templates and their full param lists — enough for the mock host to render the wizard. The mock host convention normalises ids so the launch template is always fixture id 1 and companions are ids 2-19 (regardless of the real platform template id); the CDN filter is fixture id 1 here since it's the launch template. Refresh live data with `/sync-wizard-fixtures`. The repo-root Playwright suite (`pnpm test:e2e`) screenshots the wizard in both themes and runs axe.
 
 ## SDK version
 
