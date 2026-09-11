@@ -31,7 +31,7 @@ var GcWizardShell = class extends HTMLElement {
     window.removeEventListener("scroll", this.#onScroll);
   }
   #onScroll = () => {
-    this.#stuckToBottom = this.#isAtBottom();
+    if (this.#isVisible()) this.#stuckToBottom = this.#isAtBottom();
   };
   #isAtBottom() {
     const doc = document.documentElement;
