@@ -16,22 +16,19 @@ one path rule, headers-only). `cdnResourceFastedgeHandlers` is the only way to r
 `on_response_body` / `on_request_body`. See `docs/wizards/intent-catalog.md` in the
 main `fastedge-frontend` repo for the full param/return shape.
 
-## ⚠️ Blocked on an SDK release
+## ⚠️ Blocked on portal host deployment
 
-This wizard depends on `cdnResourceFastedgeHandlers`, which exists in the
-`fastedge-frontend` host and in this SDK's local `src/types.ts` (`fastedge-wizard-sdk`
-repo) but **has not been published**. Until a `@gcoredev/fastedge-wizard-sdk` release
-including it ships, and the host change deploys to the portal:
+This wizard depends on `cdnResourceFastedgeHandlers`. The SDK (`0.0.5`) already includes
+the field in its types and mock-host implementation, but the portal host change that
+recognises the intent has **not yet been deployed**. Until that host deployment lands:
 
-- Local `pnpm dev` (mock host) works — the mock host's `deployment.plan` stub was
-  updated in the same change to reflect the new field.
+- Local `pnpm dev` (mock host) works — the mock host's `deployment.plan` stub handles
+  the field.
 - The real portal will not: `session.deployment.deploy()` will call an intent param
-  the deployed host doesn't recognize yet.
+  the deployed host doesn't recognise yet.
 
-`package.json` pins the SDK to `"latest"` rather than a specific version (contrast
-edge-totp/edge-sso, which pin `0.0.4`) because no published version has this field
-yet. **Pin to a specific version once one ships that includes it** — don't leave it
-on `"latest"` for a production wizard past that point.
+No SDK version bump is needed — `0.0.5` is sufficient. The blocker is the host
+deployment only.
 
 ## Tech stack
 

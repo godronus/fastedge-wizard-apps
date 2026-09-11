@@ -3,8 +3,7 @@
 import '@gcore/wizard-step-kit';
 import { connect, optional, WizardError } from '@gcoredev/fastedge-wizard-sdk';
 
-const hostOrigin =
-    new URLSearchParams(location.search).get('hostOrigin') || 'https://portal.gcore.com';
+const hostOrigin = new URLSearchParams(location.search).get('hostOrigin') || 'https://portal.gcore.com';
 
 const main = document.querySelector('main');
 const shell = document.querySelector('gc-wizard-shell');
@@ -66,87 +65,90 @@ try {
         shell.removeAttribute('can-advance');
     } else {
         updateCanAdvance();
-    }
 
-    pickButton.addEventListener('click', async () => {
-        pickButton.disabled = true;
-        try {
-            const r = await optional(() => session.cdn.resources.pick());
-            if (r) {
-                pickedResource = r;
-                updateCdnRow();
+        pickButton.addEventListener('click', async () => {
+            pickButton.disabled = true;
+            try {
+                const r = await optional(() => session.cdn.resources.pick());
+                if (r) {
+                    pickedResource = r;
+                    updateCdnRow();
+                    updateCanAdvance();
+                }
+            } catch (err) {
+                console.error('CDN resource pick failed:', err);
+            } finally {
+                pickButton.disabled = false;
+            }
+        });
+
+        cdnRow.addEventListener('clear', () => {
+            pickedResource = null;
+            updateCdnRow();
+            updateCanAdvance();
+        });
+
+        appNameInput.addEventListener('input', updateCanAdvance);
+
+        shell.addEventListener('navigated', ({ detail: { to } }) => {
+            step = to;
+            if (step === 2) populateReview();
+            updateCanAdvance();
+        });
+
+        shell.addEventListener('finish', async () => {
+            if (!pickedResource) return;
+
+            setDeployState({ status: 'planning', plan: null, progress: [], result: null, error: null });
+            shell.removeAttribute('can-advance');
+            setError('');
+
+            try {
+                // Same app on all three handlers — the template's own conversion logic (see its
+                // source repo) only does work when the response is HTML and the request asked for
+                // Markdown; the other handlers are pass-through unless that condition holds.
+                const result = await session.deployment.deploy(
+                    {
+                        fastedgeApps: [
+                            {
+                                ref: 'html2md-filter',
+                                name: `${appNameInput.value.trim()}-filter`,
+                                api_type: 'proxy-wasm',
+                                source: { fromTemplateId: ctx.launchTemplateId },
+                            },
+                        ],
+                        cdnResourceId: pickedResource.id,
+                        cdnResourceFastedgeHandlers: {
+                            on_request_headers: { appRef: 'html2md-filter' },
+                            on_response_headers: { appRef: 'html2md-filter' },
+                            on_response_body: { appRef: 'html2md-filter' },
+                        },
+                    },
+                    {
+                        onPlan: (plan) => setDeployState({ status: 'applying', plan }),
+                        onProgress: (ev) => setDeployState({ progress: [...deployState.progress, ev] }),
+                    },
+                );
+                setDeployState({ status: 'done', result });
+            } catch (err) {
+                if (err instanceof WizardError && err.code === 'user_cancelled') {
+                    setDeployState({ status: 'idle' });
+                } else {
+                    setDeployState({ status: 'error', error: err.message });
+                    console.error(err);
+                }
+            } finally {
                 updateCanAdvance();
             }
-        } catch (err) {
-            console.error('CDN resource pick failed:', err);
-        } finally {
-            pickButton.disabled = false;
-        }
-    });
+        });
 
-    cdnRow.addEventListener('clear', () => {
-        pickedResource = null;
-        updateCdnRow();
-        updateCanAdvance();
-    });
-
-    appNameInput.addEventListener('input', updateCanAdvance);
-
-    shell.addEventListener('navigated', ({ detail: { to } }) => {
-        step = to;
-        if (step === 2) populateReview();
-        updateCanAdvance();
-    });
-
-    shell.addEventListener('finish', async () => {
-        if (!pickedResource) return;
-
-        setDeployState({ status: 'planning', plan: null, progress: [], result: null, error: null });
-        shell.removeAttribute('can-advance');
-        setError('');
-
-        try {
-            // Same app on all three handlers — the template's own conversion logic (see its
-            // source repo) only does work when the response is HTML and the request asked for
-            // Markdown; the other handlers are pass-through unless that condition holds.
-            const result = await session.deployment.deploy(
-                {
-                    fastedgeApps: [
-                        {
-                            ref: 'html2md-filter',
-                            name: `${appNameInput.value.trim()}-filter`,
-                            api_type: 'proxy-wasm',
-                            source: { fromTemplateId: ctx.launchTemplateId },
-                        },
-                    ],
-                    cdnResourceId: pickedResource.id,
-                    cdnResourceFastedgeHandlers: {
-                        on_request_headers: { appRef: 'html2md-filter' },
-                        on_response_headers: { appRef: 'html2md-filter' },
-                        on_response_body: { appRef: 'html2md-filter' },
-                    },
-                },
-                {
-                    onPlan: (plan) => setDeployState({ status: 'applying', plan }),
-                    onProgress: (ev) => setDeployState({ progress: [...deployState.progress, ev] }),
-                },
-            );
-            setDeployState({ status: 'done', result });
-        } catch (err) {
-            if (err instanceof WizardError && err.code === 'user_cancelled') {
-                setDeployState({ status: 'idle' });
-            } else {
-                setDeployState({ status: 'error', error: err.message });
-                console.error(err);
-            }
-        } finally {
-            updateCanAdvance();
-        }
-    });
-
-    shell.addEventListener('wizard-finished', () => session.wizard.finish());
+        shell.addEventListener('wizard-finished', () => session.wizard.finish());
+    } // end else
 } catch (err) {
-    document.body.innerHTML = `<p class="wizard-error">${err.code ?? 'error'}: ${err.message}</p>`;
+    const p = document.createElement('p');
+    p.className = 'wizard-error';
+    p.textContent = `${err.code ?? 'error'}: ${err.message}`;
+    document.body.replaceChildren(p);
 }
 
 window.addEventListener('beforeunload', () => session?.dispose());
